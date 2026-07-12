@@ -5,29 +5,47 @@ struct LibraryView: View {
     @EnvironmentObject var backend: BackendClient
     @EnvironmentObject var indexCoordinator: IndexCoordinator
 
+    @State private var libraries: [Library] = []
+    @State private var selectedLibrary: Library?
+
     @State private var documents: [ISODocument] = []
     @State private var selectedDocument: ISODocument?
+
     @State private var clauses: [Clause] = []
     @State private var figures: [Figure] = []
+
+    @State private var pendingLibraryDeletion: Library?
+    @State private var pendingDocumentDeletion: ISODocument?
+
     @State private var errorMessage: String?
 
     var body: some View {
         HSplitView {
-            documentList
-                .frame(minWidth: 260)
-            if let doc = selectedDocument {
-                DocumentDetailView(
-                    document: doc,
-                    clauses: clauses,
-                    figures: figures
-                )
-            } else {
-                ContentUnavailableView(
-                    "No Document Selected",
-                    systemImage: "doc.text",
-                    description: Text("Import a folder of ISO standards to get started.")
-                )
-            }
+            FoldersPane(
+                libraries: $libraries,
+                selection: $selectedLibrary,
+                isOnline: backend.isConnected,
+                onDelete: { pendingLibraryDeletion = $0 },
+                onRescan: { library in
+                    Task { await rescan(library) }
+                }
+            )
+            .frame(minWidth: 220)
+
+            DocumentsPane(
+                documents: $documents,
+                selection: $selectedDocument,
+                isOnline: backend.isConnected,
+                folderSelected: selectedLibrary != nil,
+                onDelete: { pendingDocumentDeletion = $0 }
+            )
+            .frame(minWidth: 260)
+
+            DetailPane(
+                document: selectedDocument,
+                clauses: clauses,
+                figures: figures
+            )
         }
         .navigationTitle("Library")
         .toolbar {
@@ -40,15 +58,56 @@ struct LibraryView: View {
                         .foregroundStyle(.secondary)
                 }
                 Button("Import Folder") { pickFolder() }
+                    .disabled(!backend.isConnected)
             }
+        }
+        .overlay(alignment: .top) {
+            if !backend.isConnected {
+                OfflineBanner()
+            }
+        }
+        .sheet(item: $pendingLibraryDeletion) { library in
+            DeleteConfirmationSheet(
+                targetName: library.name,
+                targetPath: library.path,
+                onConfirm: { alsoTrash in
+                    Task { await confirmDeleteLibrary(library, alsoTrash: alsoTrash) }
+                }
+            )
+        }
+        .sheet(item: $pendingDocumentDeletion) { doc in
+            DeleteConfirmationSheet(
+                targetName: doc.displayTitle,
+                targetPath: doc.filePath,
+                onConfirm: { alsoTrash in
+                    Task { await confirmDeleteDocument(doc, alsoTrash: alsoTrash) }
+                }
+            )
         }
         .onReceive(NotificationCenter.default.publisher(for: .importFolder)) { _ in
             pickFolder()
         }
-        .task { await reload() }
-        .onChange(of: selectedDocument?.id) { _, newId in
-            guard let newId else { return }
-            Task { await loadDetails(documentId: newId) }
+        .task {
+            await loadLibraries()
+        }
+        .onChange(of: backend.isConnected) { oldValue, newValue in
+            if !oldValue && newValue {
+                Task { await loadLibraries() }
+            }
+        }
+        .onChange(of: selectedLibrary) { _, newValue in
+            selectedDocument = nil
+            documents = []
+            clauses = []
+            figures = []
+            guard let library = newValue else { return }
+            Task { await loadDocuments(for: library) }
+        }
+        .onChange(of: selectedDocument) { _, newValue in
+            clauses = []
+            figures = []
+            guard let doc = newValue else { return }
+            Task { await loadDetails(for: doc) }
         }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
             Button("OK") { errorMessage = nil }
@@ -57,22 +116,112 @@ struct LibraryView: View {
         }
     }
 
-    private var documentList: some View {
-        List(documents, selection: $selectedDocument) { doc in
-            VStack(alignment: .leading, spacing: 2) {
-                Text(doc.displayTitle)
-                    .fontWeight(.medium)
-                HStack {
-                    if let sid = doc.standardId {
-                        Text(sid).font(.caption).foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    StatusBadge(status: doc.status)
-                }
+    // MARK: - Loading
+
+    private func loadLibraries() async {
+        if backend.isConnected {
+            do {
+                let items = try await backend.listLibraries()
+                libraries = items
+            } catch {
+                errorMessage = error.localizedDescription
             }
-            .tag(doc)
+        } else {
+            libraries = DatabaseService.shared.fetchLibraries()
         }
     }
+
+    private func loadDocuments(for library: Library) async {
+        if backend.isConnected {
+            do {
+                let items = try await backend.listDocuments(libraryId: library.id)
+                // Only apply the result if the user hasn't changed selection in the meantime.
+                if selectedLibrary?.id == library.id {
+                    documents = items
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        } else {
+            let items = DatabaseService.shared.fetchDocuments(libraryId: library.id)
+            if selectedLibrary?.id == library.id {
+                documents = items
+            }
+        }
+    }
+
+    private func loadDetails(for doc: ISODocument) async {
+        if backend.isConnected {
+            do {
+                async let loadedClauses = backend.listClauses(documentId: doc.id)
+                async let loadedFigures = backend.listFigures(documentId: doc.id)
+                let c = try await loadedClauses
+                let f = try await loadedFigures
+                if selectedDocument?.id == doc.id {
+                    clauses = c
+                    figures = f
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        } else {
+            let c = DatabaseService.shared.fetchClauses(documentId: doc.id)
+            let f = DatabaseService.shared.fetchFigures(documentId: doc.id)
+            if selectedDocument?.id == doc.id {
+                clauses = c
+                figures = f
+            }
+        }
+    }
+
+    // MARK: - Delete flows
+
+    private func confirmDeleteLibrary(_ library: Library, alsoTrash: Bool) async {
+        let result = await indexCoordinator.deleteFolder(library, alsoTrash: alsoTrash)
+        switch result {
+        case .success:
+            libraries.removeAll { $0.id == library.id }
+            if selectedLibrary?.id == library.id {
+                selectedLibrary = nil
+            }
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func confirmDeleteDocument(_ doc: ISODocument, alsoTrash: Bool) async {
+        let result = await indexCoordinator.deleteDocument(doc, alsoTrash: alsoTrash)
+        switch result {
+        case .success:
+            documents.removeAll { $0.id == doc.id }
+            if selectedDocument?.id == doc.id {
+                selectedDocument = nil
+            }
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Rescan
+
+    private func rescan(_ library: Library) async {
+        let result = await indexCoordinator.rescanFolder(library)
+        switch result {
+        case .success:
+            do {
+                let items = try await backend.listDocuments(libraryId: library.id)
+                if selectedLibrary?.id == library.id {
+                    documents = items
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Import
 
     private func pickFolder() {
         let panel = NSOpenPanel()
@@ -83,35 +232,11 @@ struct LibraryView: View {
         if panel.runModal() == .OK, let url = panel.url {
             Task {
                 await indexCoordinator.importFolder(url, watch: true)
-                await reload()
+                await loadLibraries()
+                if let library = libraries.first(where: { $0.path == url.path }) {
+                    selectedLibrary = library
+                }
             }
-        }
-    }
-
-    private func reload() async {
-        do {
-            if backend.isConnected {
-                documents = try await backend.listDocuments()
-            } else {
-                documents = DatabaseService.shared.fetchDocuments()
-            }
-        } catch {
-            documents = DatabaseService.shared.fetchDocuments()
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func loadDetails(documentId: Int) async {
-        do {
-            if backend.isConnected {
-                clauses = try await backend.listClauses(documentId: documentId)
-                figures = try await backend.listFigures(documentId: documentId)
-            } else {
-                clauses = DatabaseService.shared.fetchClauses(documentId: documentId)
-                figures = []
-            }
-        } catch {
-            errorMessage = error.localizedDescription
         }
     }
 }

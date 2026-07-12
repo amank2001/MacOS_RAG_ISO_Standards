@@ -1,0 +1,238 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Backend database layer (`indexer/database.py`)": [
+      {
+        "executionId": "a019c4d8-118d-4ad3-9433-26541245deb7",
+        "chatSessionId": "sess_d7339e1f-2a1e-4854-ba03-19ea4c387e37",
+        "timestamp": 1783793097857
+      },
+      {
+        "executionId": "a019c4d8-118d-4ad3-9433-26541245deb7",
+        "chatSessionId": "sess_d7339e1f-2a1e-4854-ba03-19ea4c387e37",
+        "timestamp": 1783793347344
+      }
+    ],
+    "1.1 Add library and document lookup, figure-path listing, and delete helpers": [
+      {
+        "executionId": "a019c4d8-118d-4ad3-9433-26541245deb7",
+        "chatSessionId": "sess_d7339e1f-2a1e-4854-ba03-19ea4c387e37",
+        "timestamp": 1783793104378
+      },
+      {
+        "executionId": "a019c4d8-118d-4ad3-9433-26541245deb7",
+        "chatSessionId": "sess_d7339e1f-2a1e-4854-ba03-19ea4c387e37",
+        "timestamp": 1783793347320
+      }
+    ],
+    "2.1 Add watcher-stop and figure-cleanup helpers, refactor `POST /watch/stop`": [
+      {
+        "executionId": "f8543f58-8411-4d60-a2bc-c83b3b3fbf6a",
+        "chatSessionId": "sess_ae9f9580-101a-4ad4-9e50-74a32d17132f",
+        "timestamp": 1783793410104
+      },
+      {
+        "executionId": "f8543f58-8411-4d60-a2bc-c83b3b3fbf6a",
+        "chatSessionId": "sess_ae9f9580-101a-4ad4-9e50-74a32d17132f",
+        "timestamp": 1783793794288
+      }
+    ],
+    "2.2 Add `DELETE /libraries/{id}` and `DELETE /documents/{id}` endpoints": [
+      {
+        "executionId": "f8543f58-8411-4d60-a2bc-c83b3b3fbf6a",
+        "chatSessionId": "sess_ae9f9580-101a-4ad4-9e50-74a32d17132f",
+        "timestamp": 1783793808308
+      },
+      {
+        "executionId": "f8543f58-8411-4d60-a2bc-c83b3b3fbf6a",
+        "chatSessionId": "sess_ae9f9580-101a-4ad4-9e50-74a32d17132f",
+        "timestamp": 1783793987698
+      }
+    ],
+    "2. Backend API layer (`indexer/api.py`)": [
+      {
+        "executionId": "f8543f58-8411-4d60-a2bc-c83b3b3fbf6a",
+        "chatSessionId": "sess_ae9f9580-101a-4ad4-9e50-74a32d17132f",
+        "timestamp": 1783793987736
+      }
+    ],
+    "3. Checkpoint - Backend endpoints and property tests pass": [
+      {
+        "executionId": "5323e687-6a5c-4369-a8dd-b5c704374b51",
+        "chatSessionId": "sess_becc277b-42a8-4b8c-9b72-9766556f18eb",
+        "timestamp": 1783794311156
+      },
+      {
+        "executionId": "5323e687-6a5c-4369-a8dd-b5c704374b51",
+        "chatSessionId": "sess_becc277b-42a8-4b8c-9b72-9766556f18eb",
+        "timestamp": 1783794563031
+      }
+    ],
+    "4.1 Add `DeletionResult`, `FigureError`, and shared `delete<T>` helper": [
+      {
+        "executionId": "e1c11b7c-a6f5-4bb2-9539-a107a0e07e6d",
+        "chatSessionId": "sess_188684df-3c19-4b3e-a7c8-577b6a75ce50",
+        "timestamp": 1783828043924
+      },
+      {
+        "executionId": "e1c11b7c-a6f5-4bb2-9539-a107a0e07e6d",
+        "chatSessionId": "sess_188684df-3c19-4b3e-a7c8-577b6a75ce50",
+        "timestamp": 1783828147524
+      }
+    ],
+    "4.2 Add `deleteLibrary(id:)` and `deleteDocument(id:)`": [
+      {
+        "executionId": "e1c11b7c-a6f5-4bb2-9539-a107a0e07e6d",
+        "chatSessionId": "sess_188684df-3c19-4b3e-a7c8-577b6a75ce50",
+        "timestamp": 1783828166510
+      },
+      {
+        "executionId": "e1c11b7c-a6f5-4bb2-9539-a107a0e07e6d",
+        "chatSessionId": "sess_188684df-3c19-4b3e-a7c8-577b6a75ce50",
+        "timestamp": 1783828258620
+      }
+    ],
+    "4. Swift `BackendClient` transport (`ISOStandardsKB/Services/BackendClient.swift`)": [
+      {
+        "executionId": "e1c11b7c-a6f5-4bb2-9539-a107a0e07e6d",
+        "chatSessionId": "sess_188684df-3c19-4b3e-a7c8-577b6a75ce50",
+        "timestamp": 1783828258658
+      }
+    ],
+    "5.1 Add `deleteFolder`, `deleteDocument`, and `rescanFolder`": [
+      {
+        "executionId": "ee75cdec-c261-42e8-97ec-fc482025c589",
+        "chatSessionId": "sess_e12ffe24-1a1b-4a52-8f3d-45e896ea6a50",
+        "timestamp": 1783828321141
+      },
+      {
+        "executionId": "ee75cdec-c261-42e8-97ec-fc482025c589",
+        "chatSessionId": "sess_e12ffe24-1a1b-4a52-8f3d-45e896ea6a50",
+        "timestamp": 1783828439604
+      }
+    ],
+    "5. Swift `IndexCoordinator` orchestration (`ISOStandardsKB/Services/IndexCoordinator.swift`)": [
+      {
+        "executionId": "ee75cdec-c261-42e8-97ec-fc482025c589",
+        "chatSessionId": "sess_e12ffe24-1a1b-4a52-8f3d-45e896ea6a50",
+        "timestamp": 1783828439648
+      }
+    ],
+    "6.1 Create `DeleteConfirmationSheet.swift`": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486852
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828494352
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828597925
+      }
+    ],
+    "6.2 Create `OfflineBanner.swift`": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486886
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828495373
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828598885
+      }
+    ],
+    "6.3 Create `FoldersPane.swift`": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486906
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828496356
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828599839
+      }
+    ],
+    "6.4 Create `DocumentsPane.swift`": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486926
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828497176
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828600936
+      }
+    ],
+    "6.5 Create `DetailPane.swift`": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486944
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828497233
+      },
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828600953
+      }
+    ],
+    "7.1 Restructure `LibraryView` into a three-pane workspace and wire delete/rescan flows": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486968
+      },
+      {
+        "executionId": "5f00f341-3cd4-4fdb-823d-0282f7730e93",
+        "chatSessionId": "sess_4f3c9955-a697-47c4-be60-dd4078589767",
+        "timestamp": 1783829275184
+      },
+      {
+        "executionId": "5f00f341-3cd4-4fdb-823d-0282f7730e93",
+        "chatSessionId": "sess_4f3c9955-a697-47c4-be60-dd4078589767",
+        "timestamp": 1783830450837
+      }
+    ],
+    "8. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "3cf18977-86e9-4259-a3b7-93be130f7c1f",
+        "chatSessionId": "sess_47ee0dae-e1e7-4ab6-b097-b88fa6b01ade",
+        "timestamp": 1783828486990
+      }
+    ],
+    "7. Swift `LibraryView` restructure (`ISOStandardsKB/Views/LibraryView.swift`)": [
+      {
+        "executionId": "5f00f341-3cd4-4fdb-823d-0282f7730e93",
+        "chatSessionId": "sess_4f3c9955-a697-47c4-be60-dd4078589767",
+        "timestamp": 1783830450868
+      }
+    ]
+  }
+}

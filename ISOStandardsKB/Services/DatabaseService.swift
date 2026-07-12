@@ -37,11 +37,27 @@ final class DatabaseService {
         }
     }
 
+    func fetchLibraries() -> [Library] {
+        query("""
+            SELECT id, path, name, created_at, updated_at
+            FROM libraries ORDER BY name
+            """)
+    }
+
     func fetchDocuments() -> [ISODocument] {
         query("""
             SELECT id, library_id, file_path, file_name, file_hash, file_type,
                    standard_id, title, page_count, indexed_at, status, error_message
             FROM documents ORDER BY standard_id, file_name
+            """)
+    }
+
+    func fetchDocuments(libraryId: Int) -> [ISODocument] {
+        query("""
+            SELECT id, library_id, file_path, file_name, file_hash, file_type,
+                   standard_id, title, page_count, indexed_at, status, error_message
+            FROM documents WHERE library_id = \(libraryId)
+            ORDER BY standard_id, file_name
             """)
     }
 
@@ -51,6 +67,15 @@ final class DatabaseService {
                    page_start, page_end, sort_order
             FROM clauses WHERE document_id = \(documentId)
             ORDER BY sort_order, clause_number
+            """)
+    }
+
+    func fetchFigures(documentId: Int) -> [Figure] {
+        query("""
+            SELECT id, document_id, clause_id, chunk_id, figure_number, caption,
+                   page_number, image_path, width, height
+            FROM figures WHERE document_id = \(documentId)
+            ORDER BY page_number, id
             """)
     }
 

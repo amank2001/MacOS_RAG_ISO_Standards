@@ -55,6 +55,38 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
     def get_db() -> Database:
         return Database(db_path)
 
+    def _stop_watcher(path: str) -> str | None:
+        """Stop and drop the watcher for ``path``.
+
+        Returns an error message describing the stop failure, or ``None`` when
+        the watcher was stopped cleanly or was not registered in the first
+        place.
+        """
+        resolved = str(Path(path).resolve())
+        watcher = watchers.pop(resolved, None)
+        if watcher is None:
+            return None
+        try:
+            watcher.stop()
+            return None
+        except Exception as exc:  # noqa: BLE001
+            return f"watcher stop failed: {exc!s}"
+
+    def _delete_figure_files(paths: list[str]) -> list[dict[str, str]]:
+        """Best-effort removal of figure image files.
+
+        Missing files are treated as already cleaned up. ``OSError`` failures
+        are collected as ``{"image_path": ..., "error": ...}`` entries so the
+        caller can surface them without aborting the wider deletion.
+        """
+        errors: list[dict[str, str]] = []
+        for p in paths:
+            try:
+                Path(p).unlink(missing_ok=True)
+            except OSError as exc:
+                errors.append({"image_path": p, "error": str(exc)})
+        return errors
+
     @app.get("/health")
     def health() -> dict[str, Any]:
         ollama = OllamaClient()
@@ -145,10 +177,55 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
     @app.post("/watch/stop")
     def stop_watch(req: WatchRequest) -> dict[str, str]:
         path = str(Path(req.path).resolve())
-        watcher = watchers.pop(path, None)
-        if watcher:
-            watcher.stop()
-            return {"status": "stopped", "path": path}
-        return {"status": "not_found", "path": path}
+        if path not in watchers:
+            return {"status": "not_found", "path": path}
+        _stop_watcher(req.path)
+        return {"status": "stopped", "path": path}
+
+    @app.delete("/libraries/{library_id}")
+    def delete_library(library_id: int) -> dict[str, Any]:
+        db = get_db()
+        try:
+            lib = db.get_library(library_id)
+            if lib is None:
+                raise HTTPException(404, f"Library {library_id} not found")
+
+            # Stop the watcher first so it isn't observing a library that is
+            # about to disappear. Any stop failure is captured and surfaced in
+            # the response, but figure cleanup and row deletion still proceed.
+            watcher_error = _stop_watcher(lib["path"])
+            figure_paths = db.figure_paths_for_library(library_id)
+            figure_errors = _delete_figure_files(figure_paths)
+            removed = db.delete_library(library_id)
+
+            return {
+                "status": "ok",
+                "removed": removed,
+                "figure_errors": figure_errors,
+                "watcher_error": watcher_error,
+            }
+        finally:
+            db.close()
+
+    @app.delete("/documents/{document_id}")
+    def delete_document(document_id: int) -> dict[str, Any]:
+        db = get_db()
+        try:
+            doc = db.get_document(document_id)
+            if doc is None:
+                raise HTTPException(404, f"Document {document_id} not found")
+
+            figure_paths = db.figure_paths_for_document(document_id)
+            figure_errors = _delete_figure_files(figure_paths)
+            removed = db.delete_document(document_id)
+
+            return {
+                "status": "ok",
+                "removed": removed,
+                "figure_errors": figure_errors,
+                "watcher_error": None,
+            }
+        finally:
+            db.close()
 
     return app

@@ -19,6 +19,32 @@ enum AppConfig {
 final class BackendClient: ObservableObject {
     static let shared = BackendClient()
 
+    // MARK: - Nested response types
+
+    struct DeletionResult: Decodable {
+        let status: String
+        let removed: Int?
+        let figureErrors: [FigureError]
+        let watcherError: String?
+
+        enum CodingKeys: String, CodingKey {
+            case status
+            case removed
+            case figureErrors = "figure_errors"
+            case watcherError = "watcher_error"
+        }
+    }
+
+    struct FigureError: Decodable, Hashable {
+        let imagePath: String
+        let error: String
+
+        enum CodingKeys: String, CodingKey {
+            case imagePath = "image_path"
+            case error
+        }
+    }
+
     @Published var isConnected = false
     @Published var ollamaAvailable = false
 
@@ -63,6 +89,14 @@ final class BackendClient: ObservableObject {
 
     func listFigures(documentId: Int) async throws -> [Figure] {
         try await get("/documents/\(documentId)/figures")
+    }
+
+    func deleteLibrary(id: Int) async throws -> DeletionResult {
+        try await delete("/libraries/\(id)")
+    }
+
+    func deleteDocument(id: Int) async throws -> DeletionResult {
+        try await delete("/documents/\(id)")
     }
 
     func ingest(path: String, name: String? = nil, noEmbed: Bool = false) async throws -> [String: Any] {
@@ -140,6 +174,17 @@ final class BackendClient: ObservableObject {
         let data = try await postRaw(path, body: body)
         let obj = try JSONSerialization.jsonObject(with: data)
         return obj as? [String: Any] ?? [:]
+    }
+
+    private func delete<T: Decodable>(_ path: String) async throws -> T {
+        let url = AppConfig.apiBaseURL.appendingPathComponent(
+            path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        )
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+        return try decoder.decode(T.self, from: data)
     }
 
     private func validate(response: URLResponse, data: Data) throws {

@@ -309,3 +309,51 @@ class Database:
             (library_id,),
         ).fetchall()
         return [dict(r) for r in rows]
+
+    def get_library(self, library_id: int) -> dict[str, Any] | None:
+        row = self.conn.execute(
+            "SELECT * FROM libraries WHERE id = ?", (library_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+    def get_document(self, document_id: int) -> dict[str, Any] | None:
+        row = self.conn.execute(
+            "SELECT * FROM documents WHERE id = ?", (document_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+    def figure_paths_for_document(self, document_id: int) -> list[str]:
+        rows = self.conn.execute(
+            "SELECT image_path FROM figures WHERE document_id = ?",
+            (document_id,),
+        ).fetchall()
+        return [r["image_path"] for r in rows]
+
+    def figure_paths_for_library(self, library_id: int) -> list[str]:
+        rows = self.conn.execute(
+            """SELECT f.image_path FROM figures f
+               JOIN documents d ON d.id = f.document_id
+               WHERE d.library_id = ?""",
+            (library_id,),
+        ).fetchall()
+        return [r["image_path"] for r in rows]
+
+    def delete_library(self, library_id: int) -> int:
+        # Relies on PRAGMA foreign_keys = ON so cascades on documents, clauses,
+        # chunks, chunk_embeddings, figures, and the chunks_ad FTS trigger fire
+        # automatically.
+        cur = self.conn.execute(
+            "DELETE FROM libraries WHERE id = ?", (library_id,)
+        )
+        self.conn.commit()
+        return cur.rowcount
+
+    def delete_document(self, document_id: int) -> int:
+        # Relies on PRAGMA foreign_keys = ON so cascades on clauses, chunks,
+        # chunk_embeddings, figures, and the chunks_ad FTS trigger fire
+        # automatically.
+        cur = self.conn.execute(
+            "DELETE FROM documents WHERE id = ?", (document_id,)
+        )
+        self.conn.commit()
+        return cur.rowcount

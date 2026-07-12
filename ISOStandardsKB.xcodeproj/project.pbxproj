@@ -22,6 +22,11 @@
 		A100000013 /* FigureViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000013; };
 		A100000014 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000014; };
 		A100000015 /* schema.sql in Resources */ = {isa = PBXBuildFile; fileRef = A200000015; };
+		A100000016 /* FoldersPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000016; };
+		A100000017 /* DocumentsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000017; };
+		A100000018 /* DetailPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000018; };
+		A100000019 /* DeleteConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000019; };
+		A100000020 /* OfflineBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000020; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +45,11 @@
 		A200000013 /* FigureViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FigureViewer.swift; sourceTree = "<group>"; };
 		A200000014 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A200000015 /* schema.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = schema.sql; sourceTree = "<group>"; };
+		A200000016 /* FoldersPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldersPane.swift; sourceTree = "<group>"; };
+		A200000017 /* DocumentsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentsPane.swift; sourceTree = "<group>"; };
+		A200000018 /* DetailPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPane.swift; sourceTree = "<group>"; };
+		A200000019 /* DeleteConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteConfirmationSheet.swift; sourceTree = "<group>"; };
+		A200000020 /* OfflineBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineBanner.swift; sourceTree = "<group>"; };
 		A200000099 /* ISOStandardsKB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ISOStandardsKB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A200000100 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -101,6 +111,11 @@
 			children = (
 				A200000008 /* ContentView.swift */,
 				A200000009 /* LibraryView.swift */,
+				A200000016 /* FoldersPane.swift */,
+				A200000017 /* DocumentsPane.swift */,
+				A200000018 /* DetailPane.swift */,
+				A200000019 /* DeleteConfirmationSheet.swift */,
+				A200000020 /* OfflineBanner.swift */,
 				A200000010 /* DocumentDetailView.swift */,
 				A200000011 /* SearchView.swift */,
 				A200000012 /* QAView.swift */,
@@ -204,6 +219,11 @@
 				A100000012 /* QAView.swift in Sources */,
 				A100000013 /* FigureViewer.swift in Sources */,
 				A100000014 /* SettingsView.swift in Sources */,
+				A100000016 /* FoldersPane.swift in Sources */,
+				A100000017 /* DocumentsPane.swift in Sources */,
+				A100000018 /* DetailPane.swift in Sources */,
+				A100000019 /* DeleteConfirmationSheet.swift in Sources */,
+				A100000020 /* OfflineBanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

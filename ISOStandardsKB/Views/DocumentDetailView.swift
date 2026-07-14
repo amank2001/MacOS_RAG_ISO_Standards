@@ -6,18 +6,38 @@ struct DocumentDetailView: View {
     let figures: [Figure]
 
     @State private var selectedClause: Clause?
+    @State private var pdfPreview: PDFPreviewRequest?
 
     var body: some View {
         HSplitView {
-            List(clauses, selection: $selectedClause) { clause in
-                Text(clause.displayName)
-                    .padding(.leading, CGFloat(max(0, clause.level - 1)) * 12)
-                    .tag(clause)
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Clauses")
+                    .font(.headline)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 12)
+                    .padding(.bottom, 6)
+                if clauses.isEmpty {
+                    ContentUnavailableView(
+                        "No Clauses",
+                        systemImage: "list.bullet.indent",
+                        description: Text("No clauses detected for this document.")
+                    )
+                } else {
+                    List(clauses, selection: $selectedClause) { clause in
+                        Text(clause.displayName)
+                            .padding(.leading, CGFloat(max(0, clause.level - 1)) * 12)
+                            .tag(clause)
+                    }
+                    .listStyle(.inset)
+                }
             }
-            .frame(minWidth: 220)
+            .frame(minWidth: 240, idealWidth: 300)
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 16) {
                 header
+                Divider()
+                Text("Figures")
+                    .font(.headline)
                 if figures.isEmpty {
                     ContentUnavailableView(
                         "No Figures",
@@ -30,7 +50,19 @@ struct DocumentDetailView: View {
                 Spacer()
             }
             .padding()
+            .frame(minWidth: 360)
         }
+        .sheet(item: $pdfPreview) { request in
+            PDFViewerSheet(
+                path: request.path,
+                initialPage: request.page,
+                title: request.title
+            )
+        }
+    }
+
+    private var isPDF: Bool {
+        document.filePath.lowercased().hasSuffix(".pdf")
     }
 
     private var header: some View {
@@ -44,11 +76,30 @@ struct DocumentDetailView: View {
                 Text("• \(document.pageCount) pages")
                     .foregroundStyle(.secondary)
                 Spacer()
+                Button("Reveal in Finder") {
+                    DocumentOpener.revealInFinder(document.filePath)
+                }
                 Button("Open Original") {
-                    DocumentOpener.open(at: document.filePath)
+                    handleOpen()
                 }
             }
             .font(.caption)
+        }
+    }
+
+    private func handleOpen() {
+        guard DocumentOpener.exists(document.filePath) else {
+            _ = DocumentOpener.open(at: document.filePath)
+            return
+        }
+        if isPDF {
+            pdfPreview = PDFPreviewRequest(
+                path: document.filePath,
+                page: nil,
+                title: document.displayTitle
+            )
+        } else {
+            DocumentOpener.open(at: document.filePath)
         }
     }
 }

@@ -38,34 +38,85 @@ struct SearchView: View {
     }
 
     private var searchBar: some View {
-        HStack(spacing: 12) {
-            TextField("Search clauses, keywords...", text: $query)
-                .textFieldStyle(.roundedBorder)
-                .onSubmit { performSearch() }
-
-            Picker("Mode", selection: $mode) {
-                ForEach(SearchMode.allCases) { m in
-                    Text(m.label).tag(m)
+        VStack(spacing: 12) {
+            // Primary search row
+            HStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+                    TextField("Search clauses, keywords, or phrases…", text: $query)
+                        .textFieldStyle(.plain)
+                        .onSubmit { performSearch() }
+                    if !query.isEmpty {
+                        Button {
+                            query = ""
+                            results = []
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Clear")
+                    }
                 }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+
+                Button("Search", action: performSearch)
+                    .keyboardShortcut(.return, modifiers: [])
+                    .buttonStyle(.borderedProminent)
+                    .disabled(query.trimmingCharacters(in: .whitespaces).isEmpty)
             }
-            .pickerStyle(.segmented)
-            .frame(width: 240)
 
-            TextField("Standard filter", text: $standardFilter)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 180)
+            // Options row — labels aligned with their controls
+            HStack(spacing: 20) {
+                HStack(spacing: 8) {
+                    Text("Mode")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Picker("Mode", selection: $mode) {
+                        ForEach(SearchMode.allCases) { m in
+                            Text(m.label).tag(m)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .fixedSize()
+                }
 
-            Button("Search", action: performSearch)
-                .keyboardShortcut(.return, modifiers: [])
-                .disabled(query.trimmingCharacters(in: .whitespaces).isEmpty)
+                Divider()
+                    .frame(height: 18)
+
+                HStack(spacing: 8) {
+                    Text("Standard")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    TextField("e.g. ISO 9001", text: $standardFilter)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 160)
+                }
+
+                Spacer()
+            }
         }
         .padding()
+        .background(.bar)
     }
 
     private var resultsList: some View {
-        List(results) { result in
-            SearchResultRow(result: result)
+        List {
+            Section {
+                ForEach(results) { result in
+                    SearchResultRow(result: result)
+                }
+            } header: {
+                Text("\(results.count) result\(results.count == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
+        .listStyle(.inset)
     }
 
     private func performSearch() {
@@ -97,25 +148,39 @@ struct SearchResultRow: View {
     let result: SearchResult
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(result.citation)
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                if !result.citation.isEmpty {
+                    Text(result.citation)
+                        .font(.caption.bold())
+                        .foregroundStyle(.tint)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(.tint.opacity(0.12), in: Capsule())
+                }
                 Spacer()
-                Text(result.fileName)
+                Label(result.fileName, systemImage: "doc")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
+
             Text(result.content)
                 .font(.body)
+                .foregroundStyle(.primary)
                 .lineLimit(4)
-            Button("Open Document") {
+
+            Button {
                 DocumentOpener.open(at: result.filePath, page: result.pageNumber)
+            } label: {
+                Label("Open Document", systemImage: "arrow.up.forward.square")
+                    .font(.caption)
             }
-            .font(.caption)
             .buttonStyle(.link)
         }
-        .padding(.vertical, 4)
+        .padding(12)
+        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
     }
 }

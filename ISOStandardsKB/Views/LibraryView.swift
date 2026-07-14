@@ -20,7 +20,7 @@ struct LibraryView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        HSplitView {
+        NavigationStack {
             FoldersPane(
                 libraries: $libraries,
                 selection: $selectedLibrary,
@@ -30,40 +30,48 @@ struct LibraryView: View {
                     Task { await rescan(library) }
                 }
             )
-            .frame(minWidth: 220)
-
-            DocumentsPane(
-                documents: $documents,
-                selection: $selectedDocument,
-                isOnline: backend.isConnected,
-                folderSelected: selectedLibrary != nil,
-                onDelete: { pendingDocumentDeletion = $0 }
-            )
-            .frame(minWidth: 260)
-
-            DetailPane(
-                document: selectedDocument,
-                clauses: clauses,
-                figures: figures
-            )
-        }
-        .navigationTitle("Library")
-        .toolbar {
-            ToolbarItemGroup {
-                if indexCoordinator.isIndexing {
-                    ProgressView()
-                        .controlSize(.small)
-                    Text(indexCoordinator.lastMessage)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Button("Import Folder") { pickFolder() }
+            .navigationTitle("Library")
+            .toolbar {
+                ToolbarItemGroup {
+                    if indexCoordinator.isIndexing {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text(indexCoordinator.lastMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Button {
+                        pickFolder()
+                    } label: {
+                        Label("Import Folder", systemImage: "folder.badge.plus")
+                    }
                     .disabled(!backend.isConnected)
+                }
             }
-        }
-        .overlay(alignment: .top) {
-            if !backend.isConnected {
-                OfflineBanner()
+            .overlay(alignment: .top) {
+                if !backend.isConnected {
+                    OfflineBanner()
+                }
+            }
+            .navigationDestination(item: $selectedLibrary) { library in
+                DocumentsPane(
+                    documents: $documents,
+                    selection: $selectedDocument,
+                    isOnline: backend.isConnected,
+                    isIndexing: indexCoordinator.isIndexing,
+                    onDelete: { pendingDocumentDeletion = $0 },
+                    onRescan: { Task { await rescan(library) } }
+                )
+                .navigationTitle(library.name)
+                .navigationSubtitle("\(documents.count) document\(documents.count == 1 ? "" : "s")")
+                .navigationDestination(item: $selectedDocument) { doc in
+                    DocumentDetailView(
+                        document: doc,
+                        clauses: clauses,
+                        figures: figures
+                    )
+                    .navigationTitle(doc.displayTitle)
+                }
             }
         }
         .sheet(item: $pendingLibraryDeletion) { library in

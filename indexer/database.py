@@ -4,27 +4,88 @@ from __future__ import annotations
 
 import hashlib
 import sqlite3
+import threading
 from pathlib import Path
 from typing import Any
 
 
 class Database:
+    """Thread-safe wrapper around a SQLite database.
+
+    Every thread that touches the :pyattr:`conn` property receives its own
+    :class:`sqlite3.Connection`, opened lazily on first use. This lets a single
+    ``Database`` instance be shared between the FastAPI request thread, the
+    watchdog observer thread and the per-event worker threads spawned by the
+    library watcher without tripping ``sqlite3.ProgrammingError: SQLite objects
+    created in a thread can only be used in that same thread``.
+
+    SQLite in WAL mode already coordinates concurrent readers and a single
+    writer across independent connections, so this pattern is safe and does
+    not require an application-level lock.
+    """
+
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(str(db_path))
-        self.conn.row_factory = sqlite3.Row
-        self.conn.execute("PRAGMA foreign_keys = ON")
-        self._init_schema()
+        self._local = threading.local()
+        self._connections: list[sqlite3.Connection] = []
+        self._connections_lock = threading.Lock()
+        self._init_schema_once()
 
-    def _init_schema(self) -> None:
+    def _init_schema_once(self) -> None:
+        """Run the schema DDL exactly once, on a dedicated connection.
+
+        The statements in ``resources/schema.sql`` are all ``IF NOT EXISTS``
+        forms and running them from every per-thread connection would be
+        wasteful and would risk racing on FTS5 shadow tables. Doing it up
+        front means later per-thread connections open onto a fully
+        initialized schema.
+        """
         schema_path = Path(__file__).resolve().parents[1] / "resources" / "schema.sql"
-        if schema_path.exists():
-            self.conn.executescript(schema_path.read_text())
-            self.conn.commit()
+        if not schema_path.exists():
+            return
+        conn = sqlite3.connect(str(self.db_path))
+        try:
+            conn.executescript(schema_path.read_text())
+            conn.commit()
+        finally:
+            conn.close()
+
+    @property
+    def conn(self) -> sqlite3.Connection:
+        conn = getattr(self._local, "conn", None)
+        if conn is None:
+            conn = sqlite3.connect(str(self.db_path))
+            conn.row_factory = sqlite3.Row
+            # ``foreign_keys`` and ``busy_timeout`` are per-connection PRAGMAs
+            # in SQLite, so they have to be set on every new connection.
+            conn.execute("PRAGMA foreign_keys = ON")
+            conn.execute("PRAGMA busy_timeout = 5000")
+            self._local.conn = conn
+            with self._connections_lock:
+                self._connections.append(conn)
+        return conn
 
     def close(self) -> None:
-        self.conn.close()
+        """Close the connection owned by the current thread, if any.
+
+        Callers should invoke this from the same thread that used the
+        connection. In particular, worker threads that touch the database
+        should close before exiting, otherwise the connection will linger
+        until the thread's ``threading.local`` storage is garbage-collected.
+        """
+        conn = getattr(self._local, "conn", None)
+        if conn is None:
+            return
+        try:
+            conn.close()
+        finally:
+            self._local.conn = None
+            with self._connections_lock:
+                try:
+                    self._connections.remove(conn)
+                except ValueError:
+                    pass
 
     def get_or_create_library(self, path: str, name: str | None = None) -> int:
         resolved = str(Path(path).resolve())

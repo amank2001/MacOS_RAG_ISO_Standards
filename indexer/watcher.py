@@ -54,6 +54,11 @@ class _ReindexHandler(FileSystemEventHandler):
                 self.pipeline.ingest_file(library_id, Path(file_path))
             except Exception:
                 logger.exception("Re-index failed for %s", file_path)
+            finally:
+                # Release this worker thread's SQLite connection so the
+                # per-thread pool doesn't accumulate stale connections as
+                # filesystem events fire over time.
+                self.db.close()
 
         threading.Thread(target=_process, daemon=True).start()
 

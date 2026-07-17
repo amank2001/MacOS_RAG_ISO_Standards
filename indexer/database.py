@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import sqlite3
-import threading
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -27,10 +27,11 @@ class Database:
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._local = threading.local()
-        self._connections: list[sqlite3.Connection] = []
-        self._connections_lock = threading.Lock()
-        self._init_schema_once()
+        self.conn = sqlite3.connect(str(db_path))
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("PRAGMA foreign_keys = ON")
+        self._in_transaction = False
+        self._init_schema()
 
     def _init_schema_once(self) -> None:
         """Run the schema DDL exactly once, on a dedicated connection.
@@ -42,50 +43,51 @@ class Database:
         initialized schema.
         """
         schema_path = Path(__file__).resolve().parents[1] / "resources" / "schema.sql"
-        if not schema_path.exists():
-            return
-        conn = sqlite3.connect(str(self.db_path))
-        try:
-            conn.executescript(schema_path.read_text())
-            conn.commit()
-        finally:
-            conn.close()
+        if schema_path.exists():
+            self.conn.executescript(schema_path.read_text())
+            self.conn.commit()
+        self._migrate_schema()
 
-    @property
-    def conn(self) -> sqlite3.Connection:
-        conn = getattr(self._local, "conn", None)
-        if conn is None:
-            conn = sqlite3.connect(str(self.db_path))
-            conn.row_factory = sqlite3.Row
-            # ``foreign_keys`` and ``busy_timeout`` are per-connection PRAGMAs
-            # in SQLite, so they have to be set on every new connection.
-            conn.execute("PRAGMA foreign_keys = ON")
-            conn.execute("PRAGMA busy_timeout = 5000")
-            self._local.conn = conn
-            with self._connections_lock:
-                self._connections.append(conn)
-        return conn
+    def _migrate_schema(self) -> None:
+        """Add new columns to existing databases that were created before schema updates."""
+        migrations = [
+            "ALTER TABLE chunks ADD COLUMN bbox_x0 REAL",
+            "ALTER TABLE chunks ADD COLUMN bbox_y0 REAL",
+            "ALTER TABLE chunks ADD COLUMN bbox_x1 REAL",
+            "ALTER TABLE chunks ADD COLUMN bbox_y1 REAL",
+        ]
+        for sql in migrations:
+            try:
+                self.conn.execute(sql)
+            except sqlite3.OperationalError:
+                # Column already exists — safe to ignore
+                pass
+        self.conn.commit()
 
     def close(self) -> None:
-        """Close the connection owned by the current thread, if any.
+        self.conn.close()
 
-        Callers should invoke this from the same thread that used the
-        connection. In particular, worker threads that touch the database
-        should close before exiting, otherwise the connection will linger
-        until the thread's ``threading.local`` storage is garbage-collected.
+    @contextmanager
+    def transaction(self):
+        """Context manager for atomic database transactions.
+
+        Suppresses individual commits within the transaction scope.
+        All changes are committed atomically at the end, or rolled back on failure.
         """
-        conn = getattr(self._local, "conn", None)
-        if conn is None:
-            return
+        self._in_transaction = True
         try:
-            conn.close()
+            yield
+            self.conn.commit()
+        except Exception:
+            self.conn.rollback()
+            raise
         finally:
-            self._local.conn = None
-            with self._connections_lock:
-                try:
-                    self._connections.remove(conn)
-                except ValueError:
-                    pass
+            self._in_transaction = False
+
+    def _commit(self) -> None:
+        """Commit unless inside a transaction() block."""
+        if not self._in_transaction:
+            self.conn.commit()
 
     def get_or_create_library(self, path: str, name: str | None = None) -> int:
         resolved = str(Path(path).resolve())
@@ -99,7 +101,7 @@ class Database:
             "INSERT INTO libraries (path, name) VALUES (?, ?)",
             (resolved, display_name),
         )
-        self.conn.commit()
+        self._commit()
         return cur.lastrowid
 
     def file_hash(self, file_path: Path) -> str:
@@ -148,7 +150,7 @@ class Database:
                  standard_id, title, page_count),
             )
             doc_id = cur.lastrowid
-        self.conn.commit()
+        self._commit()
         return doc_id
 
     def _clear_document_content(self, document_id: int) -> None:
@@ -173,7 +175,7 @@ class Database:
                updated_at = datetime('now') WHERE id = ?""",
             (status, error_message, status, document_id),
         )
-        self.conn.commit()
+        self._commit()
 
     def insert_clause(
         self,
@@ -194,7 +196,7 @@ class Database:
             (document_id, clause_number, title, level, parent_clause_id,
              page_start, page_end, sort_order),
         )
-        self.conn.commit()
+        self._commit()
         return cur.lastrowid
 
     def get_clause_id(self, document_id: int, clause_number: str) -> int | None:
@@ -212,14 +214,20 @@ class Database:
         chunk_type: str = "text",
         page_number: int | None = None,
         token_count: int = 0,
+        bbox_x0: float | None = None,
+        bbox_y0: float | None = None,
+        bbox_x1: float | None = None,
+        bbox_y1: float | None = None,
     ) -> int:
         cur = self.conn.execute(
             """INSERT INTO chunks
-               (document_id, clause_id, content, chunk_type, page_number, token_count)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (document_id, clause_id, content, chunk_type, page_number, token_count),
+               (document_id, clause_id, content, chunk_type, page_number, token_count,
+                bbox_x0, bbox_y0, bbox_x1, bbox_y1)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (document_id, clause_id, content, chunk_type, page_number, token_count,
+             bbox_x0, bbox_y0, bbox_x1, bbox_y1),
         )
-        self.conn.commit()
+        self._commit()
         return cur.lastrowid
 
     def insert_figure(
@@ -242,7 +250,7 @@ class Database:
             (document_id, clause_id, chunk_id, figure_number, caption,
              page_number, image_path, width, height),
         )
-        self.conn.commit()
+        self._commit()
         return cur.lastrowid
 
     def store_embedding(
@@ -257,7 +265,7 @@ class Database:
                VALUES (?, ?, ?, ?)""",
             (chunk_id, model_name, blob, len(embedding)),
         )
-        self.conn.commit()
+        self._commit()
 
     def keyword_search(
         self,
@@ -406,7 +414,7 @@ class Database:
         cur = self.conn.execute(
             "DELETE FROM libraries WHERE id = ?", (library_id,)
         )
-        self.conn.commit()
+        self._commit()
         return cur.rowcount
 
     def delete_document(self, document_id: int) -> int:
@@ -416,5 +424,5 @@ class Database:
         cur = self.conn.execute(
             "DELETE FROM documents WHERE id = ?", (document_id,)
         )
-        self.conn.commit()
+        self._commit()
         return cur.rowcount

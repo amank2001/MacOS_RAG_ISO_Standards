@@ -47,9 +47,13 @@ CREATE TABLE IF NOT EXISTS chunks (
     document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     clause_id INTEGER REFERENCES clauses(id) ON DELETE SET NULL,
     content TEXT NOT NULL,
-    chunk_type TEXT NOT NULL DEFAULT 'text' CHECK (chunk_type IN ('text', 'heading', 'note', 'table', 'figure_caption')),
+    chunk_type TEXT NOT NULL DEFAULT 'text' CHECK (chunk_type IN ('text', 'heading', 'note', 'table', 'figure_caption', 'definition', 'annex', 'body_text')),
     page_number INTEGER,
     token_count INTEGER DEFAULT 0,
+    bbox_x0 REAL,
+    bbox_y0 REAL,
+    bbox_x1 REAL,
+    bbox_y1 REAL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

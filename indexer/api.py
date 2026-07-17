@@ -5,14 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
+from indexer.auth import verify_token
 from indexer.database import Database
 from indexer.embeddings import OllamaClient
 from indexer.pipeline import IngestionPipeline
 from indexer.rag import RAGService
+from indexer.sanitize import sanitize_path
 from indexer.search import SearchService
 from indexer.watcher import LibraryWatcher
 
@@ -31,9 +34,9 @@ class SearchRequest(BaseModel):
 
 
 class AskRequest(BaseModel):
-    question: str
+    question: str = Field(..., max_length=2000)
     standard_id: str | None = None
-    top_k: int = 12
+    top_k: int = Field(default=12, le=50)
 
 
 class WatchRequest(BaseModel):
@@ -43,12 +46,18 @@ class WatchRequest(BaseModel):
 
 def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
     app = FastAPI(title="ISO Standards KB API", version="0.1.0")
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+
+    # No CORS middleware — this is a local-only app where the Swift client
+    # communicates via direct HTTP on 127.0.0.1, not through a browser.
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": exc.errors()},
+        )
 
     watchers: dict[str, LibraryWatcher] = {}
 
@@ -87,6 +96,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
                 errors.append({"image_path": p, "error": str(exc)})
         return errors
 
+    # --- Health endpoint (no auth required) ---
     @app.get("/health")
     def health() -> dict[str, Any]:
         ollama = OllamaClient()
@@ -96,7 +106,10 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
             "db_path": str(db_path),
         }
 
-    @app.get("/libraries")
+    # --- Protected routes (require valid Bearer token) ---
+    protected = APIRouter(dependencies=[Depends(verify_token)])
+
+    @protected.get("/libraries")
     def list_libraries() -> list[dict[str, Any]]:
         db = get_db()
         try:
@@ -104,7 +117,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.get("/documents")
+    @protected.get("/documents")
     def list_documents(library_id: int | None = None) -> list[dict[str, Any]]:
         db = get_db()
         try:
@@ -112,7 +125,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.get("/documents/{document_id}/clauses")
+    @protected.get("/documents/{document_id}/clauses")
     def list_clauses(document_id: int) -> list[dict[str, Any]]:
         db = get_db()
         try:
@@ -120,7 +133,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.get("/documents/{document_id}/figures")
+    @protected.get("/documents/{document_id}/figures")
     def list_figures(document_id: int) -> list[dict[str, Any]]:
         db = get_db()
         try:
@@ -128,7 +141,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.post("/ingest")
+    @protected.post("/ingest")
     def ingest(req: IngestRequest) -> dict[str, Any]:
         path = Path(req.path)
         if not path.is_dir():
@@ -140,20 +153,26 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.post("/search")
+    @protected.post("/search")
     def search(req: SearchRequest) -> list[dict[str, Any]]:
         db = get_db()
         try:
             svc = SearchService(db, OllamaClient())
             if req.mode == "keyword":
-                return svc.keyword_search(req.query, req.standard_id, req.limit)
-            if req.mode == "semantic":
-                return svc.semantic_search(req.query, req.standard_id, req.limit)
-            return svc.hybrid_search(req.query, req.standard_id, req.limit)
+                results = svc.keyword_search(req.query, req.standard_id, req.limit)
+            elif req.mode == "semantic":
+                results = svc.semantic_search(req.query, req.standard_id, req.limit)
+            else:
+                results = svc.hybrid_search(req.query, req.standard_id, req.limit)
+            # Sanitize file_path fields to never expose absolute paths
+            for result in results:
+                if "file_path" in result:
+                    result["file_path"] = sanitize_path(result["file_path"])
+            return results
         finally:
             db.close()
 
-    @app.post("/ask")
+    @protected.post("/ask")
     def ask(req: AskRequest) -> dict[str, Any]:
         db = get_db()
         try:
@@ -162,7 +181,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.post("/watch/start")
+    @protected.post("/watch/start")
     def start_watch(req: WatchRequest) -> dict[str, str]:
         path = str(Path(req.path).resolve())
         if path in watchers:
@@ -174,7 +193,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         watchers[path] = watcher
         return {"status": "watching", "path": path}
 
-    @app.post("/watch/stop")
+    @protected.post("/watch/stop")
     def stop_watch(req: WatchRequest) -> dict[str, str]:
         path = str(Path(req.path).resolve())
         if path not in watchers:
@@ -182,7 +201,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         _stop_watcher(req.path)
         return {"status": "stopped", "path": path}
 
-    @app.delete("/libraries/{library_id}")
+    @protected.delete("/libraries/{library_id}")
     def delete_library(library_id: int) -> dict[str, Any]:
         db = get_db()
         try:
@@ -207,7 +226,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
         finally:
             db.close()
 
-    @app.delete("/documents/{document_id}")
+    @protected.delete("/documents/{document_id}")
     def delete_document(document_id: int) -> dict[str, Any]:
         db = get_db()
         try:
@@ -227,5 +246,7 @@ def create_app(db_path: Path, figures_dir: Path) -> FastAPI:
             }
         finally:
             db.close()
+
+    app.include_router(protected)
 
     return app

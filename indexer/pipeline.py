@@ -14,6 +14,7 @@ from indexer.parsers.clause_detector import (
     parent_clause_number,
     split_text_by_clauses,
 )
+from indexer.parsers.content_classifier import classify_content_type
 from indexer.parsers.docx_parser import parse_docx
 from indexer.parsers.pdf_parser import parse_pdf
 
@@ -95,11 +96,12 @@ class IngestionPipeline:
         self.db.set_document_status(doc_id, "indexing")
 
         try:
-            self._index_clauses_and_chunks(doc_id, parsed)
-            figures = save_figures(parsed, self.figures_dir, doc_id)
-            self._store_figures(doc_id, figures)
-            if self.embed and self.ollama.is_available():
-                self._embed_document_chunks(doc_id)
+            with self.db.transaction():
+                self._index_clauses_and_chunks(doc_id, parsed)
+                figures = save_figures(parsed, self.figures_dir, doc_id)
+                self._store_figures(doc_id, figures)
+                if self.embed and self.ollama.is_available():
+                    self._embed_document_chunks(doc_id)
             self.db.set_document_status(doc_id, "indexed")
             return {"file": rel_path, "status": "indexed", "document_id": doc_id}
         except Exception as exc:
@@ -109,6 +111,12 @@ class IngestionPipeline:
     def _index_clauses_and_chunks(self, doc_id: int, parsed) -> None:
         page_tuples = [(p.page_number, p.text) for p in parsed.pages]
         segments = split_text_by_clauses(page_tuples)
+
+        # Build page-to-blocks mapping for efficient bbox lookup
+        page_blocks: dict[int, list] = {}
+        for page in parsed.pages:
+            if page.blocks:
+                page_blocks[page.page_number] = page.blocks
 
         clause_id_map: dict[str, int] = {}
         sort_order = 0
@@ -131,7 +139,25 @@ class IngestionPipeline:
                 )
                 clause_id_map[clause_info.clause_number] = clause_id
 
-            chunk_type = "heading" if clause_info and clause_info.title else "text"
+            # Build clause_info dict for the content classifier
+            clause_info_dict: dict | None = None
+            if clause_info:
+                clause_info_dict = {
+                    "clause_number": clause_info.clause_number,
+                    "is_annex": clause_info.clause_number.lower().startswith("annex"),
+                    "title": clause_info.title,
+                }
+
+            chunk_type = classify_content_type(content, clause_info_dict)
+
+            # Look up bbox from page blocks
+            bbox_x0, bbox_y0, bbox_x1, bbox_y1 = None, None, None, None
+            blocks = page_blocks.get(page_num)
+            if blocks:
+                bbox_x0, bbox_y0, bbox_x1, bbox_y1 = self._find_bbox_for_content(
+                    content, blocks
+                )
+
             self.db.insert_chunk(
                 document_id=doc_id,
                 content=content,
@@ -139,7 +165,36 @@ class IngestionPipeline:
                 chunk_type=chunk_type,
                 page_number=page_num,
                 token_count=estimate_tokens(content),
+                bbox_x0=bbox_x0,
+                bbox_y0=bbox_y0,
+                bbox_x1=bbox_x1,
+                bbox_y1=bbox_y1,
             )
+
+    def _find_bbox_for_content(
+        self, content: str, blocks: list
+    ) -> tuple[float | None, float | None, float | None, float | None]:
+        """Find the bounding box that covers the content within the given blocks.
+
+        Searches for blocks whose text appears in the content and computes a
+        union bbox covering all matching blocks. If no match is found, returns
+        the first block's bbox as a fallback.
+        """
+        matching_blocks = [b for b in blocks if b.text and b.text in content]
+
+        if not matching_blocks:
+            # Fallback: use the first block's bbox
+            if blocks:
+                bbox = blocks[0].bbox
+                return bbox[0], bbox[1], bbox[2], bbox[3]
+            return None, None, None, None
+
+        # Compute union bbox across all matching blocks
+        x0 = min(b.bbox[0] for b in matching_blocks)
+        y0 = min(b.bbox[1] for b in matching_blocks)
+        x1 = max(b.bbox[2] for b in matching_blocks)
+        y1 = max(b.bbox[3] for b in matching_blocks)
+        return x0, y0, x1, y1
 
     def _store_figures(self, doc_id: int, figures: list[dict]) -> None:
         clause_rows = self.db.conn.execute(

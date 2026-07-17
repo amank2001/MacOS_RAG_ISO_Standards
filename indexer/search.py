@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from indexer.database import Database
@@ -87,6 +88,11 @@ class SearchService:
                 item = dict(item)
                 item["rrf_score"] = rrf_score
                 results.append(item)
+
+        # Apply retrieval boosts based on query analysis
+        query_analysis = self._analyze_query(query)
+        results = self._apply_boosts(results, query_analysis)
+
         return results
 
     def _prepare_fts_query(self, query: str) -> str:
@@ -125,3 +131,117 @@ class SearchService:
         params.append(limit)
         rows = self.db.conn.execute(sql, params).fetchall()
         return [dict(r) for r in rows]
+
+    # Regex patterns for query analysis
+    _CLAUSE_PATTERN = re.compile(r'(?:[A-Z]\.)?(?:\d+(?:\.\d+)+)')
+    _STANDARD_PATTERN = re.compile(
+        r'ISO(?:/IEC|/TS)?\s+\d+(?::\d{4})?', re.IGNORECASE
+    )
+    _CONTENT_TYPE_KEYWORDS: dict[str, str] = {
+        "definition": "definition",
+        "define": "definition",
+        "defined": "definition",
+        "table": "table",
+        "tables": "table",
+        "annex": "annex",
+        "appendix": "annex",
+        "note": "note",
+        "notes": "note",
+        "heading": "heading",
+        "section title": "heading",
+        "figure": "figure_caption",
+        "diagram": "figure_caption",
+        "chart": "figure_caption",
+    }
+
+    def _apply_boosts(
+        self,
+        results: list[dict[str, Any]],
+        query_analysis: dict[str, list[str]],
+    ) -> list[dict[str, Any]]:
+        """Apply retrieval boosts to RRF scores based on query analysis.
+
+        Boost multipliers:
+            - Clause number match: 2.0x
+            - Standard ID match: 1.5x (case-insensitive, partial match)
+            - Content type match: 1.5x
+
+        Returns results re-sorted by boosted rrf_score descending.
+        """
+        if not results:
+            return results
+
+        clause_numbers = query_analysis.get("clause_numbers", [])
+        standard_ids = query_analysis.get("standard_ids", [])
+        content_types = query_analysis.get("content_types", [])
+
+        # If no boosts to apply, return results unchanged
+        if not clause_numbers and not standard_ids and not content_types:
+            return results
+
+        # Normalize standard IDs for case-insensitive partial matching
+        standard_ids_lower = [sid.lower() for sid in standard_ids]
+
+        for result in results:
+            score = result.get("rrf_score")
+            if score is None:
+                continue
+
+            # Clause number boost (2.0x)
+            result_clause = result.get("clause_number")
+            if result_clause and clause_numbers:
+                if result_clause in clause_numbers:
+                    score *= 2.0
+
+            # Standard ID boost (1.5x) — case-insensitive partial match
+            result_standard = result.get("standard_id")
+            if result_standard and standard_ids_lower:
+                result_standard_lower = result_standard.lower()
+                for sid_lower in standard_ids_lower:
+                    if sid_lower in result_standard_lower or result_standard_lower in sid_lower:
+                        score *= 1.5
+                        break
+
+            # Content type boost (1.5x)
+            result_type = result.get("chunk_type")
+            if result_type and content_types:
+                if result_type in content_types:
+                    score *= 1.5
+
+            result["rrf_score"] = score
+
+        # Re-sort by boosted rrf_score descending
+        results.sort(key=lambda r: r.get("rrf_score", 0), reverse=True)
+        return results
+
+    def _analyze_query(self, query: str) -> dict[str, list[str]]:
+        """Extract clause numbers, standard IDs, and content type keywords from query.
+
+        Returns a dict with keys:
+            clause_numbers: list of clause number strings (e.g. ["A.5.1", "4.2"])
+            standard_ids: list of standard ID strings (e.g. ["ISO 27001:2022"])
+            content_types: list of matched content type strings (e.g. ["definition"])
+        """
+        if not query or not query.strip():
+            return {
+                "clause_numbers": [],
+                "standard_ids": [],
+                "content_types": [],
+            }
+
+        clause_numbers = self._CLAUSE_PATTERN.findall(query)
+        standard_ids = self._STANDARD_PATTERN.findall(query)
+
+        query_lower = query.lower()
+        content_types: list[str] = []
+        seen_types: set[str] = set()
+        for keyword, content_type in self._CONTENT_TYPE_KEYWORDS.items():
+            if keyword in query_lower and content_type not in seen_types:
+                content_types.append(content_type)
+                seen_types.add(content_type)
+
+        return {
+            "clause_numbers": clause_numbers,
+            "standard_ids": standard_ids,
+            "content_types": content_types,
+        }

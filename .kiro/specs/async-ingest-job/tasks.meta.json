@@ -1,0 +1,142 @@
+{
+  "pbtResults": {
+    "1. Write bug condition exploration test (slow synchronous ingest + missing status endpoint)": {
+      "status": "passed",
+      "failingExample": "Counterexamples proving the bug (test FAILED on unfixed code, which is the success case for a bug-condition exploration test):\n\n- test_slow_synchronous_ingest_blocks[1.0]: AssertionError: submit blocked for 1.01s (>= client timeout 0.5s); synchronous ingest held the connection open for the full ingest_library duration (1.0s) instead of returning fast. assert 1.0129103329999793 < 0.5\n- test_slow_synchronous_ingest_blocks[1.5]: assert 1.5163256250000359 < 0.5 (blocked 1.52s)\n- test_slow_synchronous_ingest_blocks[2.0]: assert 2.022635374999993 < 0.5 (blocked 2.02s)\n- test_rescan_blocks_the_same_way[1.0/1.5/2.0]: same blocking; POST /ingest returned no job_id key.\n- test_status_endpoint_reaches_terminal_state: AssertionError: no job_id returned from POST /ingest, so there is no status channel to poll (assert None is not None).\n- test_unknown_status_id_returns_404_on_unfixed_route: PASSED (404 confirms the GET /ingest/status route is absent — documents the gap the fix fills).\n\nResult: 7 failed, 1 passed. The synchronous POST /ingest blocks for the full ingest_library duration (no fast job_id submit), and no GET /ingest/status route exists.",
+      "lastRunTimestamp": 1784367093658
+    },
+    "3.6 Verify bug condition exploration test now passes (fix checking)": {
+      "status": "passed",
+      "lastRunTimestamp": 1784368620832
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration test (slow synchronous ingest + missing status endpoint)": [
+      {
+        "executionId": "2c859d32-3d35-4e6d-88ae-2c7f88998618",
+        "chatSessionId": "sess_13af9bc6-2ddd-4c0e-b080-cb5162cb7e32",
+        "timestamp": 1784366885752
+      },
+      {
+        "executionId": "2c859d32-3d35-4e6d-88ae-2c7f88998618",
+        "chatSessionId": "sess_13af9bc6-2ddd-4c0e-b080-cb5162cb7e32",
+        "timestamp": 1784367122963
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing fix)": [
+      {
+        "executionId": "d25df1f1-3289-4369-9618-f3bae5b36f7d",
+        "chatSessionId": "sess_276b0b1a-25cd-4f8e-bbba-d1de0b824e21",
+        "timestamp": 1784367154533
+      },
+      {
+        "executionId": "d25df1f1-3289-4369-9618-f3bae5b36f7d",
+        "chatSessionId": "sess_276b0b1a-25cd-4f8e-bbba-d1de0b824e21",
+        "timestamp": 1784367690023
+      }
+    ],
+    "3.1 Add in-memory job registry and job runner in `indexer/api.py`": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784367789510
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784367907161
+      }
+    ],
+    "3.2 Rework `POST /ingest` into a fast submit endpoint": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784367912939
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368032175
+      }
+    ],
+    "3.3 Add `GET /ingest/status/{job_id}` on the protected router": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368039109
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368137476
+      }
+    ],
+    "3.4 Update `BackendClient.swift` to submit and poll": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368144542
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368226753
+      }
+    ],
+    "3.5 Update `IndexCoordinator.swift` importFolder/rescanFolder to submit-then-poll": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368232609
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368356912
+      }
+    ],
+    "3.6 Verify bug condition exploration test now passes (fix checking)": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368363075
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368648890
+      }
+    ],
+    "3.7 Verify preservation tests still pass (preservation checking)": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368657944
+      },
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368837333
+      }
+    ],
+    "3. Fix: make ingestion asynchronous (submit + status endpoints and Swift submit-then-poll)": [
+      {
+        "executionId": "4a4058ed-a8a9-4edb-94f3-ca835deec006",
+        "chatSessionId": "sess_0032e1c0-5c7a-4ccb-921e-5806491c06ad",
+        "timestamp": 1784368837365
+      }
+    ],
+    "4. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "e1ec6bac-7f8f-470d-b640-9314c8d9e664",
+        "chatSessionId": "sess_2d7e0841-6c4c-4a72-8a6d-dc3972e32203",
+        "timestamp": 1784368890254
+      },
+      {
+        "executionId": "e1ec6bac-7f8f-470d-b640-9314c8d9e664",
+        "chatSessionId": "sess_2d7e0841-6c4c-4a72-8a6d-dc3972e32203",
+        "timestamp": 1784368984687
+      }
+    ]
+  }
+}

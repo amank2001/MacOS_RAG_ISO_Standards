@@ -1,0 +1,16 @@
+{
+  "source": "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/ISOStandardsKBApp.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Import Folder...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 32
+        }
+      }
+    ]
+  },
+  "version": 1
+}

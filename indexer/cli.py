@@ -109,8 +109,16 @@ def cmd_evaluate(args: argparse.Namespace) -> None:
 def cmd_serve(args: argparse.Namespace) -> None:
     import uvicorn
     from indexer.api import create_app
+    from indexer.auth import generate_token, token_path
 
     db_path, figures_dir = get_paths(args)
+
+    # Generate the per-launch API token BEFORE starting the server, otherwise
+    # every protected route rejects requests with 401 (the token would be None).
+    token = generate_token()
+    logging.info("API token written to %s", token_path())
+    logging.info("Authorization: Bearer %s", token)
+
     app = create_app(db_path, figures_dir)
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="info")
 

@@ -49,6 +49,30 @@ final class BackendClient: ObservableObject {
         }
     }
 
+    /// Response from submitting an ingest job via `POST /ingest`.
+    struct IngestJob: Decodable {
+        let jobId: String
+        let status: String
+
+        enum CodingKeys: String, CodingKey {
+            case jobId = "job_id"
+            case status
+        }
+    }
+
+    /// Response from polling `GET /ingest/status/{job_id}`.
+    struct IngestStatus: Decodable {
+        let status: String
+        let result: IngestResult?
+        let error: String?
+
+        struct IngestResult: Decodable {
+            let indexed: Int
+            let skipped: Int
+            let errors: Int
+        }
+    }
+
     @Published var isConnected = false
     @Published var ollamaAvailable = false
 
@@ -75,11 +99,14 @@ final class BackendClient: ObservableObject {
     }
 
     /// Adds the Authorization Bearer header to the request if a token is available.
+    ///
+    /// The token is re-read from disk on each call. The backend mints a new
+    /// per-launch token every time it starts, so caching the value from app
+    /// launch would break with a stale token whenever the server restarts.
     private func applyAuth(to request: inout URLRequest) {
-        if cachedToken == nil {
-            cachedToken = Self.loadToken()
-        }
-        if let token = cachedToken {
+        let token = Self.loadToken() ?? cachedToken
+        if let token {
+            cachedToken = token
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
     }
@@ -127,13 +154,29 @@ final class BackendClient: ObservableObject {
         try await delete("/documents/\(id)")
     }
 
-    func ingest(path: String, name: String? = nil, noEmbed: Bool = false) async throws -> [String: Any] {
+    /// Submits an ingest job and returns the generated job id.
+    ///
+    /// `POST /ingest` is now a fast submit endpoint that enqueues the work on a
+    /// background worker and returns `{job_id, status}` immediately. Callers poll
+    /// `ingestStatus(jobId:)` until a terminal state is reached.
+    func ingest(path: String, name: String? = nil, noEmbed: Bool = false) async throws -> String {
         let body: [String: Any] = [
             "path": path,
             "name": name as Any,
             "no_embed": noEmbed
         ]
-        return try await postJSON("/ingest", body: body)
+        let data = try await postRaw("/ingest", body: body)
+        let job = try decoder.decode(IngestJob.self, from: data)
+        return job.jobId
+    }
+
+    /// Polls the status of a previously submitted ingest job.
+    ///
+    /// Returns the job's lifecycle state (`queued` / `running` / `completed` /
+    /// `failed`), the `{indexed, skipped, errors}` result on completion, and an
+    /// `error` message on failure.
+    func ingestStatus(jobId: String) async throws -> IngestStatus {
+        try await get("/ingest/status/\(jobId)")
     }
 
     func search(query: String, standardId: String? = nil, mode: SearchMode = .hybrid, limit: Int = 20) async throws -> [SearchResult] {

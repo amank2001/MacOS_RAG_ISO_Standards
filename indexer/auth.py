@@ -20,6 +20,11 @@ def _get_token_dir() -> Path:
     return Path.home() / ".isostandardskb"
 
 
+def token_path() -> Path:
+    """Return the full path to the API token file."""
+    return _get_token_dir() / "api_token"
+
+
 def generate_token() -> str:
     """Generate a random 32-byte hex token and write it to the app support directory.
 
@@ -32,10 +37,8 @@ def generate_token() -> str:
 
     token = secrets.token_hex(32)
 
-    token_dir = _get_token_dir()
-    token_dir.mkdir(parents=True, exist_ok=True)
-
-    token_file = token_dir / "api_token"
+    token_file = token_path()
+    token_file.parent.mkdir(parents=True, exist_ok=True)
     token_file.write_text(token, encoding="utf-8")
 
     _current_token = token

@@ -1,0 +1,32 @@
+{
+  "source": "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/FigureViewer.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Image unavailable",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "Close",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Page %lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 17
+        }
+      }
+    ]
+  },
+  "version": 1
+}

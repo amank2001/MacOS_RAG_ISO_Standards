@@ -1,0 +1,56 @@
+{
+  "source": "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/FoldersPane.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "No Folders Yet",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 14
+        }
+      },
+      {
+        "comment": "",
+        "key": "Import a folder of ISO standard documents to start building your knowledge base.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rescan",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rescan",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 79
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/OfflineBanner.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Backend is not running. Destructive actions are disabled.",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "Backend is not running. Destructive actions are disabled.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 7
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -44,6 +44,30 @@ class ClauseDetectorTests(unittest.TestCase):
         assert sid is not None
         self.assertIn("27001", sid)
 
+    def test_standard_id_from_filename_hyphen(self):
+        sid = detect_standard_id("", "ISO-27001.pdf")
+        self.assertIsNotNone(sid)
+        assert sid is not None
+        self.assertIn("27001", sid)
+
+    def test_standard_id_from_filename_iso_iec(self):
+        sid = detect_standard_id("", "ISO_IEC_27001_2022.pdf")
+        self.assertIsNotNone(sid)
+        assert sid is not None
+        self.assertIn("27001", sid)
+
+    def test_standard_id_from_text_still_works(self):
+        sid = detect_standard_id("This document is ISO 9001:2015 compliant.", "random.pdf")
+        self.assertIsNotNone(sid)
+        assert sid is not None
+        self.assertIn("9001", sid)
+
+    def test_standard_id_part_number_preserved(self):
+        sid = detect_standard_id("", "ISO 27001-1_2022.pdf")
+        self.assertIsNotNone(sid)
+        assert sid is not None
+        self.assertIn("27001-1", sid)
+
     def test_parent_clause(self):
         self.assertEqual(parent_clause_number("4.1.2"), "4.1")
         self.assertIsNone(parent_clause_number("4"))

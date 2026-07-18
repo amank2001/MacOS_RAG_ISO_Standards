@@ -1,0 +1,12 @@
+{
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/ISOStandardsKBApp.swift" : {
+    "abi-baseline-json" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB.abi.json",
+    "const-values" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.swiftconstvalues",
+    "dependencies" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.d",
+    "diagnostics" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.dia",
+    "objc-header" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-Swift.h",
+    "swiftdoc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB.swiftdoc",
+    "swiftmodule" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB.swiftmodule",
+    "swiftsourceinfo" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB.swiftsourceinfo"
+  }
+}

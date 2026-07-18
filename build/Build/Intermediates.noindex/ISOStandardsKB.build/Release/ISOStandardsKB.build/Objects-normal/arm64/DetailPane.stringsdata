@@ -1,0 +1,24 @@
+{
+  "source": "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/DetailPane.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Select a document to view its clauses and figures.",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Document Selected",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 17
+        }
+      }
+    ]
+  },
+  "version": 1
+}

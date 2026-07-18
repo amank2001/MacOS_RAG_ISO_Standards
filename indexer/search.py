@@ -66,15 +66,20 @@ class SearchService:
     ) -> list[dict[str, Any]]:
         keyword_results = self.keyword_search(query, standard_id, limit=limit * 2)
         kw_ranked = [
-            (r["chunk_id"], abs(r.get("score", 0)))
+            (r["chunk_id"], abs(r.get("score") or 0))
             for r in keyword_results
         ]
 
         semantic_results = self.semantic_search(query, standard_id, limit=limit * 2)
-        sem_ranked = [(r["chunk_id"], r.get("score", 0)) for r in semantic_results]
+        sem_ranked = [(r["chunk_id"], r.get("score") or 0) for r in semantic_results]
 
         if not sem_ranked:
             return keyword_results[:limit]
+
+        # Map each chunk to its real semantic cosine similarity so it survives
+        # fusion (rrf_score is rank-based and cannot be compared to a cosine
+        # threshold). Chunks not present in semantic_results have no cosine.
+        sem_score_map = {r["chunk_id"]: r.get("score") for r in semantic_results}
 
         fused = reciprocal_rank_fusion([kw_ranked, sem_ranked])
         merged: dict[int, dict] = {}
@@ -87,6 +92,7 @@ class SearchService:
             if item:
                 item = dict(item)
                 item["rrf_score"] = rrf_score
+                item["semantic_score"] = sem_score_map.get(chunk_id)
                 results.append(item)
 
         # Apply retrieval boosts based on query analysis

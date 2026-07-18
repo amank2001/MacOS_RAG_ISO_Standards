@@ -28,6 +28,8 @@
 		A100000019 /* DeleteConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000019; };
 		A100000020 /* OfflineBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000020; };
 		A100000021 /* PDFViewerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000021; };
+		A100000022 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000022; };
+		A100000023 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200000023; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +54,8 @@
 		A200000019 /* DeleteConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteConfirmationSheet.swift; sourceTree = "<group>"; };
 		A200000020 /* OfflineBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineBanner.swift; sourceTree = "<group>"; };
 		A200000021 /* PDFViewerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFViewerSheet.swift; sourceTree = "<group>"; };
+		A200000022 /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
+		A200000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A200000099 /* ISOStandardsKB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ISOStandardsKB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A200000100 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -104,6 +108,7 @@
 				A200000005 /* OllamaClient.swift */,
 				A200000006 /* DocumentOpener.swift */,
 				A200000007 /* DatabaseService.swift */,
+				A200000022 /* PDFExporter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -132,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				A200000015 /* schema.sql */,
+				A200000023 /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -198,6 +204,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A100000015 /* schema.sql in Resources */,
+				A100000023 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,6 +235,7 @@
 				A100000019 /* DeleteConfirmationSheet.swift in Sources */,
 				A100000020 /* OfflineBanner.swift in Sources */,
 				A100000021 /* PDFViewerSheet.swift in Sources */,
+				A100000022 /* PDFExporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

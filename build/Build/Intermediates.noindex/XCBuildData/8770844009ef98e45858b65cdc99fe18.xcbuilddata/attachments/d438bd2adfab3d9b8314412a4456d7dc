@@ -1,0 +1,116 @@
+{
+  "" : {
+    "const-values" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.swiftconstvalues",
+    "dependencies" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.d",
+    "diagnostics" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.dia",
+    "emit-module-dependencies" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary-emit-module.dia",
+    "pch" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKB-primary.swiftdeps"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/ISOStandardsKBApp.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKBApp.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKBApp.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ISOStandardsKBApp.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Models/Models.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/Models.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/Models.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/Models.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Services/BackendClient.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/BackendClient.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/BackendClient.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/BackendClient.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Services/DatabaseService.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DatabaseService.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DatabaseService.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DatabaseService.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Services/DocumentOpener.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentOpener.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentOpener.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentOpener.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Services/IndexCoordinator.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/IndexCoordinator.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/IndexCoordinator.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/IndexCoordinator.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Services/OllamaClient.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/OllamaClient.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/OllamaClient.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/OllamaClient.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Services/PDFExporter.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/PDFExporter.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/PDFExporter.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/PDFExporter.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/ContentView.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/DeleteConfirmationSheet.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DeleteConfirmationSheet.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DeleteConfirmationSheet.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DeleteConfirmationSheet.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/DetailPane.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DetailPane.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DetailPane.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DetailPane.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/DocumentDetailView.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentDetailView.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentDetailView.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentDetailView.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/DocumentsPane.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentsPane.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentsPane.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/DocumentsPane.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/FigureViewer.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/FigureViewer.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/FigureViewer.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/FigureViewer.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/FoldersPane.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/FoldersPane.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/FoldersPane.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/FoldersPane.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/LibraryView.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/LibraryView.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/LibraryView.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/LibraryView.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/OfflineBanner.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/OfflineBanner.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/OfflineBanner.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/OfflineBanner.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/PDFViewerSheet.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/PDFViewerSheet.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/PDFViewerSheet.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/PDFViewerSheet.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/QAView.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/QAView.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/QAView.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/QAView.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/SearchView.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/SearchView.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/SearchView.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/SearchView.o"
+  },
+  "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/SettingsView.swift" : {
+    "index-unit-output-path" : "/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/ahsankhan/ISOStandardsKB/build/Build/Intermediates.noindex/ISOStandardsKB.build/Release/ISOStandardsKB.build/Objects-normal/arm64/SettingsView.o"
+  }
+}

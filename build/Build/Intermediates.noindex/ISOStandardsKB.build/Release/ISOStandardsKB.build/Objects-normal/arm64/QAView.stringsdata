@@ -1,0 +1,232 @@
+{
+  "source": "/Users/ahsankhan/ISOStandardsKB/ISOStandardsKB/Views/QAView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Ask",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 28
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ask questions about your indexed ISO standards. Answers cite source clauses only.",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 163
+        }
+      },
+      {
+        "comment": "",
+        "key": "Grounded Q&A",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 161
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cited sources will appear here.",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 190
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sources",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 188
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ask a Question",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "Answers are grounded in your indexed ISO standards and cite their sources.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 48
+        }
+      },
+      {
+        "comment": "",
+        "key": "Standard",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Filter by standard (optional), e.g. ISO 9001",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "Type your question here…",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ollama offline — excerpts only",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 98
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ask",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "No relevant content was found for this question in your indexed standards.",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 133
+        }
+      },
+      {
+        "comment": "",
+        "key": "Not Found in Library",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 131
+        }
+      },
+      {
+        "comment": "",
+        "key": "Answer",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Partial",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "Export PDF",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 123
+        }
+      },
+      {
+        "comment": "",
+        "key": "Evidence",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 173
+        }
+      },
+      {
+        "comment": "",
+        "key": "Related Diagrams",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 179
+        }
+      },
+      {
+        "comment": "",
+        "key": "Jump to page",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open document",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reveal in Finder",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 292
+        }
+      },
+      {
+        "comment": "",
+        "key": "Bounding box available",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 344
+        }
+      },
+      {
+        "comment": "",
+        "key": "Jump to page",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 353
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open document",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 353
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reveal in Finder",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 362
+        }
+      }
+    ]
+  },
+  "version": 1
+}

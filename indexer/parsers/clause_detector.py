@@ -37,14 +37,14 @@ FIGURE_PATTERN = re.compile(
 )
 
 STANDARD_ID_PATTERNS = [
-    re.compile(r"\b(ISO\s*/?\s*IEC\s*\d{4,5}(?:-\d+)?(?::\d{4})?)\b", re.IGNORECASE),
-    re.compile(r"\b(ISO\s*\d{4,5}(?:-\d+)?(?::\d{4})?)\b", re.IGNORECASE),
-    re.compile(r"\b(IEC\s*\d{4,5}(?:-\d+)?(?::\d{4})?)\b", re.IGNORECASE),
+    re.compile(r"\b(ISO[\s_-]*/?[\s_-]*IEC[\s_-]*\d{4,5}(?:-\d+)?(?::\d{4})?)(?![A-Za-z0-9])", re.IGNORECASE),
+    re.compile(r"\b(ISO[\s_-]*\d{4,5}(?:-\d+)?(?::\d{4})?)(?![A-Za-z0-9])", re.IGNORECASE),
+    re.compile(r"\b(IEC[\s_-]*\d{4,5}(?:-\d+)?(?::\d{4})?)(?![A-Za-z0-9])", re.IGNORECASE),
 ]
 
 
 def normalize_standard_id(raw: str) -> str:
-    cleaned = re.sub(r"\s+", " ", raw.strip())
+    cleaned = re.sub(r"[\s_]+", " ", raw.strip())
     cleaned = cleaned.replace(" / ", "/").replace("/ ", "/").replace(" /", "/")
     return cleaned.upper()
 

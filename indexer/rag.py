@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import re
 from typing import Any
 
@@ -75,6 +74,7 @@ class RAGService:
     ) -> dict[str, Any]:
         sources = self.search.hybrid_search(question, standard_id, limit=top_k)
 
+        # Abstain only when retrieval returns nothing at all.
         if not sources:
             return {
                 "status": "not_found",
@@ -84,11 +84,34 @@ class RAGService:
                 "warnings": [],
             }
 
-        # Threshold check: if best chunk score is below threshold, abstain
-        max_score = max(
-            src.get("rrf_score", 0.0) for src in sources
-        )
-        if max_score < SIMILARITY_THRESHOLD:
+        # Offline: we cannot call the LLM and have no cosine signal to gate on.
+        # Return the top matching excerpts directly so evidence + Export PDF work.
+        if not self.ollama.is_available():
+            summary_lines = [
+                "Ollama is not available. Showing top matching excerpts:",
+                "",
+            ]
+            for src in sources[:5]:
+                summary_lines.append(
+                    f"- {src.get('standard_id', 'Unknown')}, "
+                    f"Clause {src.get('clause_number', 'N/A')}, "
+                    f"p.{src.get('page_number', '?')}: "
+                    f"{src.get('content', '')[:200]}..."
+                )
+            return {
+                "status": "answered",
+                "answer": "\n".join(summary_lines),
+                "evidence": self._build_evidence(sources),
+                "figures": self._collect_figures(sources),
+                "warnings": [],
+            }
+
+        # Online: abstain only when a real semantic cosine signal exists AND the
+        # best cosine is below the threshold. Never threshold on rrf_score.
+        cosine_scores = [
+            s for s in (src.get("semantic_score") for src in sources) if s is not None
+        ]
+        if cosine_scores and max(cosine_scores) < SIMILARITY_THRESHOLD:
             return {
                 "status": "not_found",
                 "answer": "Not found in library.",
@@ -119,27 +142,6 @@ Document excerpts:
 {context}
 
 Provide a grounded answer with citations."""
-
-        if not self.ollama.is_available():
-            # Offline fallback: return top source excerpts directly
-            summary_lines = [
-                "Ollama is not available. Showing top matching excerpts:",
-                "",
-            ]
-            for src in sources[:5]:
-                summary_lines.append(
-                    f"- {src.get('standard_id', 'Unknown')}, "
-                    f"Clause {src.get('clause_number', 'N/A')}, "
-                    f"p.{src.get('page_number', '?')}: "
-                    f"{src.get('content', '')[:200]}..."
-                )
-            return {
-                "status": "answered",
-                "answer": "\n".join(summary_lines),
-                "evidence": self._build_evidence(sources),
-                "figures": self._collect_figures(sources),
-                "warnings": [],
-            }
 
         answer = self.ollama.chat(
             [
@@ -233,7 +235,8 @@ Provide a grounded answer with citations."""
 
         Each evidence entry contains:
         - chunk_id: int
-        - file_path: relative path (filename only, no absolute paths)
+        - file_path: absolute document path from the DB (matches /documents and
+          /search); the local-only Swift client opens documents by this path.
         - standard_id: str or None
         - clause_number: str or None
         - page_number: int or None
@@ -242,16 +245,10 @@ Provide a grounded answer with citations."""
         """
         evidence = []
         for src in sources:
-            # Use file_name for relative path (avoids exposing absolute paths)
-            file_path = src.get("file_name") or ""
-            if not file_path:
-                # Fallback: extract basename from absolute file_path
-                abs_path = src.get("file_path") or ""
-                if abs_path:
-                    file_path = os.path.basename(abs_path)
-
-            # Final safety: ensure no absolute path leaks through
-            file_path = sanitize_path(file_path)
+            # Use the absolute DB file_path so the local-only client can open
+            # the document (consistent with /documents and /search). Fall back
+            # to file_name only if file_path is missing.
+            file_path = src.get("file_path") or src.get("file_name") or ""
 
             # Build bbox as [x0, y0, x1, y1] if all four values are present
             bbox_x0 = src.get("bbox_x0")

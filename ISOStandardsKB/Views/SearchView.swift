@@ -160,8 +160,11 @@ struct SearchResultRow: View {
                 }
                 Spacer()
                 Label(result.fileName, systemImage: "doc")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .font(.caption.bold())
+                    .foregroundStyle(.tint)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.tint.opacity(0.12), in: Capsule())
                     .lineLimit(1)
             }
 

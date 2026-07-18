@@ -31,7 +31,7 @@ class Database:
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA foreign_keys = ON")
         self._in_transaction = False
-        self._init_schema()
+        self._init_schema_once()
 
     def _init_schema_once(self) -> None:
         """Run the schema DDL exactly once, on a dedicated connection.
@@ -62,6 +62,47 @@ class Database:
             except sqlite3.OperationalError:
                 # Column already exists — safe to ignore
                 pass
+        self.conn.commit()
+        self._migrate_chunk_type_constraint()
+
+    def _migrate_chunk_type_constraint(self) -> None:
+        row = self.conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='chunks'"
+        ).fetchone()
+        if not row or "'body_text'" in row["sql"]:
+            return  # already up to date
+        self.conn.executescript(
+            """
+            PRAGMA foreign_keys=OFF;
+            BEGIN;
+            CREATE TABLE chunks_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+                clause_id INTEGER REFERENCES clauses(id) ON DELETE SET NULL,
+                content TEXT NOT NULL,
+                chunk_type TEXT NOT NULL DEFAULT 'text'
+                    CHECK (chunk_type IN ('text','heading','note','table',
+                           'figure_caption','definition','annex','body_text')),
+                page_number INTEGER,
+                token_count INTEGER DEFAULT 0,
+                bbox_x0 REAL, bbox_y0 REAL, bbox_x1 REAL, bbox_y1 REAL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            INSERT INTO chunks_new
+                SELECT id, document_id, clause_id, content, chunk_type, page_number,
+                       token_count, bbox_x0, bbox_y0, bbox_x1, bbox_y1, created_at
+                FROM chunks;
+            DROP TABLE chunks;
+            ALTER TABLE chunks_new RENAME TO chunks;
+            COMMIT;
+            PRAGMA foreign_keys=ON;
+            """
+        )
+        # DROP TABLE chunks also dropped its FTS sync triggers and idx_chunks_*
+        # indexes; re-run the schema DDL (all IF NOT EXISTS) to recreate them.
+        schema_path = Path(__file__).resolve().parents[1] / "resources" / "schema.sql"
+        if schema_path.exists():
+            self.conn.executescript(schema_path.read_text())
         self.conn.commit()
 
     def close(self) -> None:

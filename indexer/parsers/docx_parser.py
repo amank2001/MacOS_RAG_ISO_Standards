@@ -15,6 +15,7 @@ from docx.text.paragraph import Paragraph
 class ParsedPage:
     page_number: int
     text: str
+    blocks: list = field(default_factory=list)
 
 
 @dataclass

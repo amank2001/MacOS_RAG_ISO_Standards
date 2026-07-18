@@ -25,14 +25,14 @@ Incremental enhancements to the ISO Standards RAG Knowledge Base covering: schem
 - [x] 17. Apply verify_token dependency to all routes except /health in create_app() and remove wildcard CORS
 - [x] 18. Add response path sanitizer utility and apply to all file_path fields in /search and /ask responses
 - [x] 19. Refactor ingest_file() to wrap chunk/embedding insertion in a single database transaction with ROLLBACK on failure
-- [ ] 20. Update BackendClient.swift to read API token from application support directory and add Authorization Bearer header to all requests
-- [ ] 21. Update AskResponse Swift model to match new structured response (status, evidence array with quoted_text and bbox, warnings)
-- [ ] 22. Update QAView to display answer status and render evidence citations as clickable links that open PDFViewerSheet at the cited page
-- [ ] 23. When bbox data is available in evidence, add PDFKit highlight annotation at the bbox coordinates in PDFViewerSheet
-- [ ] 24. Create ISOStandardsKB/Services/PDFExporter.swift that generates a PDF report (question, answer, numbered citations, timestamp, disclaimer footer) using Core Graphics
-- [ ] 25. Add Export PDF button to QAView answer section that calls PDFExporter and presents a save dialog
-- [ ] 26. Create tests/eval_dataset.json with 15+ test cases and tests/evaluation.py with run_evaluation() computing recall@10, citation_accuracy, p95_latency
-- [ ] 27. Add evaluate CLI command to isokb.py that runs the evaluation suite and prints results with regression detection
+- [x] 20. Update BackendClient.swift to read API token from application support directory and add Authorization Bearer header to all requests
+- [x] 21. Update AskResponse Swift model to match new structured response (status, evidence array with quoted_text and bbox, warnings)
+- [x] 22. Update QAView to display answer status and render evidence citations as clickable links that open PDFViewerSheet at the cited page
+- [x] 23. When bbox data is available in evidence, add PDFKit highlight annotation at the bbox coordinates in PDFViewerSheet
+- [x] 24. Create ISOStandardsKB/Services/PDFExporter.swift that generates a PDF report (question, answer, numbered citations, timestamp, disclaimer footer) using Core Graphics
+- [x] 25. Add Export PDF button to QAView answer section that calls PDFExporter and presents a save dialog
+- [x] 26. Create tests/eval_dataset.json with 15+ test cases and tests/evaluation.py with run_evaluation() computing recall@10, citation_accuracy, p95_latency
+- [x] 27. Add evaluate CLI command to isokb.py that runs the evaluation suite and prints results with regression detection
 
 ## Task Dependency Graph
 

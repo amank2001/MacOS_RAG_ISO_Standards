@@ -3,11 +3,14 @@ import PDFKit
 import SwiftUI
 
 /// Sheet that renders a PDF from disk with PDFKit and jumps to `initialPage`.
+/// When `bbox` data is available (4 elements: [x0, y0, x1, y1]), a semi-transparent
+/// yellow highlight annotation is added at those coordinates on the target page.
 /// Falls back to a clear error state if the file is missing.
 struct PDFViewerSheet: View {
     let path: String
     let initialPage: Int?
     let title: String?
+    let bbox: [Double]?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -20,7 +23,7 @@ struct PDFViewerSheet: View {
             Divider()
 
             if let url = fileURL {
-                PDFKitRepresentable(url: url, initialPage: initialPage)
+                PDFKitRepresentable(url: url, initialPage: initialPage, bbox: bbox)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ContentUnavailableView(
@@ -76,6 +79,7 @@ struct PDFViewerSheet: View {
 private struct PDFKitRepresentable: NSViewRepresentable {
     let url: URL
     let initialPage: Int?
+    let bbox: [Double]?
 
     func makeNSView(context: Context) -> PDFView {
         let view = PDFView()
@@ -103,6 +107,20 @@ private struct PDFKitRepresentable: NSViewRepresentable {
             target > 0,
             let page = document.page(at: max(0, target - 1))
         else { return }
+
+        // Add highlight annotation if bbox data is available with 4 valid elements.
+        if let bbox = bbox, bbox.count >= 4 {
+            let x0 = CGFloat(bbox[0])
+            let y0 = CGFloat(bbox[1])
+            let x1 = CGFloat(bbox[2])
+            let y1 = CGFloat(bbox[3])
+            let rect = CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0)
+
+            let annotation = PDFAnnotation(bounds: rect, forType: .highlight, withProperties: nil)
+            annotation.color = NSColor.yellow.withAlphaComponent(0.3)
+            page.addAnnotation(annotation)
+        }
+
         // Defer to next runloop tick so PDFView has finished layout before we
         // scroll; otherwise the jump is silently ignored on first display.
         DispatchQueue.main.async {

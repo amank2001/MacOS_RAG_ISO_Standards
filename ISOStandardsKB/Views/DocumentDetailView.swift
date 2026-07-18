@@ -56,7 +56,8 @@ struct DocumentDetailView: View {
             PDFViewerSheet(
                 path: request.path,
                 initialPage: request.page,
-                title: request.title
+                title: request.title,
+                bbox: request.bbox
             )
         }
     }
@@ -96,7 +97,8 @@ struct DocumentDetailView: View {
             pdfPreview = PDFPreviewRequest(
                 path: document.filePath,
                 page: nil,
-                title: document.displayTitle
+                title: document.displayTitle,
+                bbox: nil
             )
         } else {
             DocumentOpener.open(at: document.filePath)

@@ -14,6 +14,10 @@ enum AppConfig {
     static var figuresPath: URL {
         appSupportDir.appendingPathComponent("figures", isDirectory: true)
     }
+
+    static var tokenPath: URL {
+        appSupportDir.appendingPathComponent("api_token")
+    }
 }
 
 final class BackendClient: ObservableObject {
@@ -50,10 +54,34 @@ final class BackendClient: ObservableObject {
 
     private let session: URLSession
     private let decoder: JSONDecoder
+    private var cachedToken: String?
 
     init(session: URLSession = .shared) {
         self.session = session
         self.decoder = JSONDecoder()
+        self.cachedToken = Self.loadToken()
+    }
+
+    // MARK: - Token management
+
+    /// Reads the API token from the application support directory.
+    /// Returns nil if the file doesn't exist or can't be read.
+    private static func loadToken() -> String? {
+        guard let content = try? String(contentsOf: AppConfig.tokenPath, encoding: .utf8) else {
+            return nil
+        }
+        let token = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        return token.isEmpty ? nil : token
+    }
+
+    /// Adds the Authorization Bearer header to the request if a token is available.
+    private func applyAuth(to request: inout URLRequest) {
+        if cachedToken == nil {
+            cachedToken = Self.loadToken()
+        }
+        if let token = cachedToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
     }
 
     func checkHealth() async {
@@ -154,6 +182,7 @@ final class BackendClient: ObservableObject {
         }
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
+        applyAuth(to: &request)
         let (data, response) = try await session.data(for: request)
         try validate(response: response, data: data)
         return try decoder.decode(T.self, from: data)
@@ -165,6 +194,7 @@ final class BackendClient: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        applyAuth(to: &request)
         let (data, response) = try await session.data(for: request)
         try validate(response: response, data: data)
         return data
@@ -182,6 +212,7 @@ final class BackendClient: ObservableObject {
         )
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        applyAuth(to: &request)
         let (data, response) = try await session.data(for: request)
         try validate(response: response, data: data)
         return try decoder.decode(T.self, from: data)

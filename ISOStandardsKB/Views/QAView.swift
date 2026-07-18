@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct QAView: View {
     @EnvironmentObject var backend: BackendClient
@@ -9,6 +10,7 @@ struct QAView: View {
     @State private var isAsking = false
     @State private var errorMessage: String?
     @State private var pdfPreview: PDFPreviewRequest?
+    @State private var isExportingPDF = false
 
     var body: some View {
         HSplitView {
@@ -32,7 +34,8 @@ struct QAView: View {
             PDFViewerSheet(
                 path: request.path,
                 initialPage: request.page,
-                title: request.title
+                title: request.title,
+                bbox: request.bbox
             )
         }
     }
@@ -104,15 +107,53 @@ struct QAView: View {
     private var answerSection: some View {
         if let response {
             VStack(alignment: .leading, spacing: 8) {
-                Label("Answer", systemImage: "text.book.closed")
-                    .font(.headline)
-                ScrollView {
-                    Text(response.answer)
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(12)
+                HStack {
+                    Label("Answer", systemImage: "text.book.closed")
+                        .font(.headline)
+                    Spacer()
+                    if response.status == "partial" {
+                        Label("Partial", systemImage: "exclamationmark.triangle")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                    if response.status != "not_found" {
+                        Button {
+                            exportPDF()
+                        } label: {
+                            Label("Export PDF", systemImage: "arrow.down.doc")
+                        }
+                        .disabled(isExportingPDF)
+                    }
                 }
-                .background(.quaternary.opacity(0.25), in: RoundedRectangle(cornerRadius: 10))
+
+                if response.status == "not_found" {
+                    ContentUnavailableView(
+                        "Not Found in Library",
+                        systemImage: "magnifyingglass",
+                        description: Text("No relevant content was found for this question in your indexed standards.")
+                    )
+                    .frame(maxHeight: .infinity)
+                } else {
+                    if !response.warnings.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(response.warnings, id: \.self) { warning in
+                                Label(warning, systemImage: "exclamationmark.triangle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                        .padding(8)
+                        .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
+                    }
+
+                    ScrollView {
+                        Text(response.answer)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                    }
+                    .background(.quaternary.opacity(0.25), in: RoundedRectangle(cornerRadius: 10))
+                }
             }
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
@@ -129,9 +170,9 @@ struct QAView: View {
     private var sourcesPanel: some View {
         if let response {
             List {
-                Section("Sources") {
-                    ForEach(response.sources) { source in
-                        SourceCardView(source: source, pdfPreview: $pdfPreview)
+                Section("Evidence") {
+                    ForEach(response.evidence) { item in
+                        EvidenceCardView(evidence: item, pdfPreview: $pdfPreview)
                     }
                 }
                 if !response.figures.isEmpty {
@@ -165,6 +206,46 @@ struct QAView: View {
             }
         }
     }
+
+    private func exportPDF() {
+        guard let response else { return }
+        isExportingPDF = true
+
+        Task {
+            defer { isExportingPDF = false }
+
+            guard let tempURL = PDFExporter().exportPDF(question: question, response: response) else {
+                errorMessage = "Failed to generate PDF."
+                return
+            }
+
+            await MainActor.run {
+                let savePanel = NSSavePanel()
+                savePanel.title = "Save PDF Export"
+                savePanel.nameFieldStringValue = tempURL.lastPathComponent
+                savePanel.allowedContentTypes = [.pdf]
+                savePanel.canCreateDirectories = true
+
+                let result = savePanel.runModal()
+                guard result == .OK, let destinationURL = savePanel.url else {
+                    // User cancelled — clean up temp file
+                    try? FileManager.default.removeItem(at: tempURL)
+                    return
+                }
+
+                do {
+                    // Remove existing file at destination if present
+                    if FileManager.default.fileExists(atPath: destinationURL.path) {
+                        try FileManager.default.removeItem(at: destinationURL)
+                    }
+                    try FileManager.default.copyItem(at: tempURL, to: destinationURL)
+                    try FileManager.default.removeItem(at: tempURL)
+                } catch {
+                    errorMessage = "Failed to save PDF: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }
 
 struct PDFPreviewRequest: Identifiable {
@@ -172,6 +253,7 @@ struct PDFPreviewRequest: Identifiable {
     let path: String
     let page: Int?
     let title: String?
+    let bbox: [Double]?
 }
 
 struct SourceCardView: View {
@@ -228,10 +310,79 @@ struct SourceCardView: View {
             pdfPreview = PDFPreviewRequest(
                 path: source.filePath,
                 page: source.pageNumber,
-                title: source.documentTitle ?? source.fileName
+                title: source.documentTitle ?? source.fileName,
+                bbox: nil
             )
         } else {
             DocumentOpener.open(at: source.filePath, page: source.pageNumber)
+        }
+    }
+}
+
+struct EvidenceCardView: View {
+    let evidence: EvidenceItem
+    @Binding var pdfPreview: PDFPreviewRequest?
+
+    private var isPDF: Bool {
+        evidence.filePath.lowercased().hasSuffix(".pdf")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if !evidence.citation.isEmpty {
+                Text(evidence.citation)
+                    .font(.caption.bold())
+                    .foregroundStyle(.tint)
+            }
+            Text(evidence.quotedText)
+                .font(.caption)
+                .lineLimit(4)
+                .foregroundStyle(.secondary)
+                .italic()
+
+            if evidence.bbox != nil {
+                Label("Bounding box available", systemImage: "rectangle.dashed")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
+            HStack(spacing: 12) {
+                Button {
+                    handleOpen()
+                } label: {
+                    Label(isPDF ? "Jump to page" : "Open document",
+                          systemImage: "arrow.up.forward.square")
+                        .font(.caption2)
+                }
+                .buttonStyle(.link)
+
+                Button {
+                    DocumentOpener.revealInFinder(evidence.filePath)
+                } label: {
+                    Label("Reveal in Finder", systemImage: "folder")
+                        .font(.caption2)
+                }
+                .buttonStyle(.link)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func handleOpen() {
+        guard DocumentOpener.exists(evidence.filePath) else {
+            _ = DocumentOpener.open(at: evidence.filePath, page: evidence.pageNumber)
+            return
+        }
+
+        if isPDF {
+            pdfPreview = PDFPreviewRequest(
+                path: evidence.filePath,
+                page: evidence.pageNumber,
+                title: evidence.filePath,
+                bbox: evidence.bbox
+            )
+        } else {
+            DocumentOpener.open(at: evidence.filePath, page: evidence.pageNumber)
         }
     }
 }

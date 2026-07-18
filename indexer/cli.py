@@ -74,6 +74,38 @@ def cmd_watch(args: argparse.Namespace) -> None:
     db.close()
 
 
+def cmd_evaluate(args: argparse.Namespace) -> None:
+    """Run the evaluation suite and check for regressions."""
+    import sys as _sys
+
+    # Ensure the project root is on sys.path so tests.evaluation can be imported
+    project_root = str(Path(__file__).resolve().parent.parent)
+    if project_root not in _sys.path:
+        _sys.path.insert(0, project_root)
+
+    from tests.evaluation import run_evaluation
+
+    db_path, _ = get_paths(args)
+
+    # Load baseline metrics from JSON file if provided
+    baseline = None
+    if args.baseline:
+        with open(args.baseline, "r", encoding="utf-8") as f:
+            baseline = json.load(f)
+
+    dataset_path = args.dataset if args.dataset else None
+
+    results = run_evaluation(db_path, dataset_path=dataset_path, baseline=baseline)
+
+    # If --json flag is set, print raw JSON results to stdout
+    if args.json:
+        print(json.dumps(results, indent=2, default=str))
+
+    # Exit with code 1 if regressions were detected (for CI integration)
+    if results.get("regressions"):
+        sys.exit(1)
+
+
 def cmd_serve(args: argparse.Namespace) -> None:
     import uvicorn
     from indexer.api import create_app
@@ -118,6 +150,12 @@ def main() -> None:
     serve_p = sub.add_parser("serve", help="Start local API server for macOS app")
     serve_p.add_argument("--port", type=int, default=8742)
     serve_p.set_defaults(func=cmd_serve)
+
+    eval_p = sub.add_parser("evaluate", help="Run evaluation suite and check for regressions")
+    eval_p.add_argument("--dataset", help="Path to custom eval dataset JSON")
+    eval_p.add_argument("--baseline", help="Path to baseline metrics JSON for regression detection")
+    eval_p.add_argument("--json", action="store_true", help="Output raw JSON results")
+    eval_p.set_defaults(func=cmd_evaluate)
 
     args = parser.parse_args()
     args.func(args)

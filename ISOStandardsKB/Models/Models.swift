@@ -145,10 +145,42 @@ struct Figure: Identifiable, Codable, Hashable {
     }
 }
 
+struct EvidenceItem: Identifiable, Codable, Hashable {
+    let chunkId: Int
+    let filePath: String
+    let standardId: String?
+    let clauseNumber: String?
+    let pageNumber: Int?
+    let quotedText: String
+    let bbox: [Double]?
+
+    var id: Int { chunkId }
+
+    enum CodingKeys: String, CodingKey {
+        case chunkId = "chunk_id"
+        case filePath = "file_path"
+        case standardId = "standard_id"
+        case clauseNumber = "clause_number"
+        case pageNumber = "page_number"
+        case quotedText = "quoted_text"
+        case bbox
+    }
+
+    var citation: String {
+        var parts: [String] = []
+        if let standardId { parts.append(standardId) }
+        if let clauseNumber { parts.append("Clause \(clauseNumber)") }
+        if let pageNumber { parts.append("p.\(pageNumber)") }
+        return parts.joined(separator: ", ")
+    }
+}
+
 struct AskResponse: Codable {
+    let status: String
     let answer: String
-    let sources: [SearchResult]
+    let evidence: [EvidenceItem]
     let figures: [Figure]
+    let warnings: [String]
 }
 
 struct HealthResponse: Codable {
